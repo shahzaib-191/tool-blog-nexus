@@ -1,5 +1,5 @@
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -22,9 +22,17 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Redirect to login if not authenticated or not admin
+  useEffect(() => {
+    // Redirect to login if not authenticated or not admin
+    if (!user) {
+      navigate('/login', { replace: true });
+    } else if (!user.isAdmin) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
+  // If user is not loaded yet or not admin, return null
   if (!user || !user.isAdmin) {
-    navigate('/login');
     return null;
   }
 
