@@ -222,8 +222,8 @@ const ToolPage = () => {
     : () => <div className="text-center py-8">Tool interface not implemented yet</div>;
 
   const IconComponent = tool?.icon 
-    ? (LucideIcons as any)[tool.icon] || LucideIcons.Tool 
-    : LucideIcons.Tool;
+    ? (LucideIcons as any)[tool.icon] || LucideIcons.Wrench 
+    : LucideIcons.Wrench;
 
   return (
     <MainLayout>

@@ -11,7 +11,8 @@ interface ToolCardProps {
 
 const ToolCard = ({ tool }: ToolCardProps) => {
   // Dynamically get the icon from Lucide
-  const IconComponent = (LucideIcons as any)[tool.icon] || LucideIcons.Tool;
+  // Use Wrench as fallback if the icon doesn't exist
+  const IconComponent = (LucideIcons as any)[tool.icon] || LucideIcons.Wrench;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md group">
