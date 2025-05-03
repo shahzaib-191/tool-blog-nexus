@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
 import { getToolById, Tool } from '@/services/toolsService';
@@ -10,6 +10,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
+// Import tool components
+import ImageToPdfTool from '@/components/tools/ImageToPdfTool';
+
+// Basic components for tools that haven't been implemented yet
 const PDFToWordTool = () => {
   const [file, setFile] = useState<File | null>(null);
   const [converting, setConverting] = useState(false);
@@ -186,8 +190,9 @@ const WordCounterTool = () => {
 const toolComponents: Record<string, React.FC> = {
   'pdf-to-word': PDFToWordTool,
   'word-to-pdf': PDFToWordTool, // Reusing the same component
+  'image-to-pdf': ImageToPdfTool,
   'qr-generator': QRCodeTool,
-  'word-counter': WordCounterTool
+  'word-counter': WordCounterTool,
   // Add more tool implementations as needed
 };
 
@@ -219,7 +224,12 @@ const ToolPage = () => {
   // Get the component for this tool
   const ToolComponent = toolId && toolComponents[toolId] 
     ? toolComponents[toolId] 
-    : () => <div className="text-center py-8">Tool interface not implemented yet</div>;
+    : () => (
+      <div className="text-center py-8">
+        <p className="mb-4">This tool interface is under development.</p>
+        <p className="text-gray-600">Please check back later for full functionality.</p>
+      </div>
+    );
 
   const IconComponent = tool?.icon 
     ? (LucideIcons as any)[tool.icon] || LucideIcons.Wrench 

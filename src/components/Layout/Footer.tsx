@@ -24,16 +24,16 @@ const Footer = () => {
             <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-gray-300 hover:text-white">Home</Link>
+                <Link to="/" className="text-gray-300 hover:text-white transition-colors">Home</Link>
               </li>
               <li>
-                <Link to="/blog" className="text-gray-300 hover:text-white">Blog</Link>
+                <Link to="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link>
               </li>
               <li>
-                <Link to="/login" className="text-gray-300 hover:text-white">Login</Link>
+                <Link to="/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
               </li>
               <li>
-                <Link to="/register" className="text-gray-300 hover:text-white">Register</Link>
+                <Link to="/register" className="text-gray-300 hover:text-white transition-colors">Register</Link>
               </li>
             </ul>
           </div>
@@ -43,22 +43,22 @@ const Footer = () => {
             <h3 className="text-xl font-semibold mb-4">Tool Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/?category=Productivity%20%26%20Utility" className="text-gray-300 hover:text-white">
+                <Link to="/?category=Productivity%20%26%20Utility" className="text-gray-300 hover:text-white transition-colors">
                   Productivity & Utility
                 </Link>
               </li>
               <li>
-                <Link to="/?category=SEO%20%26%20Marketing" className="text-gray-300 hover:text-white">
+                <Link to="/?category=SEO%20%26%20Marketing" className="text-gray-300 hover:text-white transition-colors">
                   SEO & Marketing
                 </Link>
               </li>
               <li>
-                <Link to="/?category=Image%20%26%20Video" className="text-gray-300 hover:text-white">
+                <Link to="/?category=Image%20%26%20Video" className="text-gray-300 hover:text-white transition-colors">
                   Image & Video
                 </Link>
               </li>
               <li>
-                <Link to="/?category=AI%20%26%20Writing" className="text-gray-300 hover:text-white">
+                <Link to="/?category=AI%20%26%20Writing" className="text-gray-300 hover:text-white transition-colors">
                   AI & Writing
                 </Link>
               </li>
@@ -70,13 +70,13 @@ const Footer = () => {
             <h3 className="text-xl font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/privacy-policy" className="text-gray-300 hover:text-white">Privacy Policy</Link>
+                <Link to="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link>
               </li>
               <li>
-                <Link to="/terms-of-service" className="text-gray-300 hover:text-white">Terms of Service</Link>
+                <Link to="/terms-of-service" className="text-gray-300 hover:text-white transition-colors">Terms of Service</Link>
               </li>
               <li>
-                <Link to="/cookie-policy" className="text-gray-300 hover:text-white">Cookie Policy</Link>
+                <Link to="/cookie-policy" className="text-gray-300 hover:text-white transition-colors">Cookie Policy</Link>
               </li>
             </ul>
           </div>

@@ -1,6 +1,6 @@
 
 import { ReactNode, useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -11,6 +11,7 @@ import {
   X 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -20,16 +21,29 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children, title }: AdminLayoutProps) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Redirect to login if not authenticated or not admin
     if (!user) {
-      navigate('/login', { replace: true });
+      // Not authenticated at all, redirect to login
+      toast({
+        title: "Authentication required",
+        description: "Please login to access the admin panel",
+        variant: "destructive",
+      });
+      navigate('/login', { replace: true, state: { from: location.pathname } });
     } else if (!user.isAdmin) {
+      // Authenticated but not admin, redirect to home
+      toast({
+        title: "Access denied",
+        description: "You don't have administrator privileges",
+        variant: "destructive",
+      });
       navigate('/', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.pathname, toast]);
 
   // If user is not loaded yet or not admin, return null
   if (!user || !user.isAdmin) {
@@ -72,7 +86,9 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             <Link
               key={item.path}
               to={item.path}
-              className="flex items-center space-x-3 px-3 py-2.5 rounded-md hover:bg-gray-700"
+              className={`flex items-center space-x-3 px-3 py-2.5 rounded-md hover:bg-gray-700 ${
+                location.pathname === item.path ? "bg-gray-700" : ""
+              }`}
             >
               {item.icon}
               <span>{item.label}</span>
@@ -117,7 +133,9 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="flex items-center space-x-3 px-3 py-2.5 rounded-md hover:bg-gray-700"
+                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-md hover:bg-gray-700 ${
+                    location.pathname === item.path ? "bg-gray-700" : ""
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.icon}

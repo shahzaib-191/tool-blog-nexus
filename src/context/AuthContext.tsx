@@ -1,5 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface User {
   id: string;
@@ -27,7 +28,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check localStorage for user data on initial load
     const userData = localStorage.getItem('user');
     if (userData) {
-      setUser(JSON.parse(userData));
+      try {
+        setUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+        localStorage.removeItem('user');
+        setUser(null);
+      }
     }
     setIsLoading(false);
   }, []);
