@@ -69,14 +69,9 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="outline" size="sm">Login</Button>
-                </Link>
-                <Link to="/register">
-                  <Button size="sm">Register</Button>
-                </Link>
-              </>
+              <Link to="/login">
+                <Button size="sm">Login</Button>
+              </Link>
             )}
           </div>
 
@@ -137,22 +132,13 @@ const Header = () => {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="block px-3 py-2 text-base font-medium bg-tool-blue text-white rounded-md px-3 py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="block px-3 py-2 text-base font-medium bg-tool-blue text-white rounded-md px-3 py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Login
+              </Link>
             )}
           </div>
         </div>

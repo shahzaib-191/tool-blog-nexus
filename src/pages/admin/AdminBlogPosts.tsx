@@ -33,7 +33,7 @@ import {
   BlogPost, 
   blogCategories 
 } from '@/services/blogService';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2, Image, Upload } from 'lucide-react';
 
 const AdminBlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -48,6 +48,8 @@ const AdminBlogPosts = () => {
     category: blogCategories[0],
     imageUrl: ''
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -74,7 +76,7 @@ const AdminBlogPosts = () => {
 
   const handleCreatePost = async () => {
     try {
-      const { title, content, category, imageUrl } = formData;
+      const { title, content, category } = formData;
       
       if (!title || !content || !category) {
         toast({
@@ -85,12 +87,25 @@ const AdminBlogPosts = () => {
         return;
       }
       
+      // Simulate image upload and get URL
+      let imageUrl = '';
+      if (imageFile) {
+        // In a real application, this would be an actual file upload to a server or Supabase storage
+        // For demo purposes, we're using a data URL as a placeholder
+        imageUrl = imagePreview || '';
+        
+        toast({
+          title: 'Image Upload',
+          description: 'Image uploaded successfully!'
+        });
+      }
+      
       const newPost = await createBlogPost({
         title,
         content,
         category,
         author: 'Admin User', // Hard-coded for now
-        imageUrl: imageUrl || undefined
+        imageUrl: imageUrl
       });
       
       setPosts([newPost, ...posts]);
@@ -115,7 +130,7 @@ const AdminBlogPosts = () => {
     if (!currentPost) return;
     
     try {
-      const { title, content, category, imageUrl } = formData;
+      const { title, content, category } = formData;
       
       if (!title || !content || !category) {
         toast({
@@ -126,11 +141,23 @@ const AdminBlogPosts = () => {
         return;
       }
       
+      // Handle image update if a new one was provided
+      let imageUrl = currentPost.imageUrl;
+      if (imageFile && imagePreview) {
+        // In a real application, this would upload the new image
+        imageUrl = imagePreview;
+        
+        toast({
+          title: 'Image Upload',
+          description: 'Image updated successfully!'
+        });
+      }
+      
       const updatedPost = await updateBlogPost(currentPost.id, {
         title,
         content,
         category,
-        imageUrl: imageUrl || undefined
+        imageUrl
       });
       
       if (updatedPost) {
@@ -139,6 +166,8 @@ const AdminBlogPosts = () => {
       
       setIsEditDialogOpen(false);
       setCurrentPost(null);
+      setImageFile(null);
+      setImagePreview(null);
       
       toast({
         title: 'Success',
@@ -190,6 +219,7 @@ const AdminBlogPosts = () => {
       category: post.category,
       imageUrl: post.imageUrl || ''
     });
+    setImagePreview(post.imageUrl || null);
     setIsEditDialogOpen(true);
   };
 
@@ -205,11 +235,27 @@ const AdminBlogPosts = () => {
       category: blogCategories[0],
       imageUrl: ''
     });
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      
+      // Create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -256,7 +302,18 @@ const AdminBlogPosts = () => {
               posts.map((post) => (
                 <tr key={post.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{post.title}</div>
+                    <div className="flex items-center">
+                      {post.imageUrl && (
+                        <div className="flex-shrink-0 h-10 w-10 mr-4">
+                          <img 
+                            src={post.imageUrl} 
+                            alt={post.title} 
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="text-sm font-medium text-gray-900">{post.title}</div>
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -329,14 +386,56 @@ const AdminBlogPosts = () => {
               </Select>
             </div>
             <div>
-              <Label htmlFor="imageUrl">Image URL (optional)</Label>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                placeholder="https://example.com/image.jpg"
-              />
+              <Label htmlFor="image">Featured Image</Label>
+              <div className="mt-1 flex items-center">
+                <label className="block w-full">
+                  <div className="flex items-center justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
+                    <div className="space-y-1 text-center">
+                      <div className="flex flex-col items-center">
+                        {imagePreview ? (
+                          <div className="relative w-full h-32 mb-4">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="h-32 object-contain mx-auto"
+                            />
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              className="absolute top-0 right-0"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setImageFile(null);
+                                setImagePreview(null);
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        ) : (
+                          <Image className="mx-auto h-12 w-12 text-gray-400" />
+                        )}
+                        <p className="text-sm text-gray-500">
+                          <span className="font-medium text-blue-600 hover:text-blue-500">
+                            Upload a file
+                          </span>{' '}
+                          or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 10MB
+                        </p>
+                      </div>
+                    </div>
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                </label>
+              </div>
             </div>
             <div>
               <Label htmlFor="content">Content</Label>
@@ -351,11 +450,14 @@ const AdminBlogPosts = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setIsCreateDialogOpen(false);
+              resetForm();
+            }}>
               Cancel
             </Button>
             <Button onClick={handleCreatePost}>
-              Create Post
+              <Upload className="mr-2 h-4 w-4" /> Create Post
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -399,13 +501,56 @@ const AdminBlogPosts = () => {
               </Select>
             </div>
             <div>
-              <Label htmlFor="edit-imageUrl">Image URL (optional)</Label>
-              <Input
-                id="edit-imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-              />
+              <Label htmlFor="edit-image">Featured Image</Label>
+              <div className="mt-1 flex items-center">
+                <label className="block w-full">
+                  <div className="flex items-center justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:bg-gray-50">
+                    <div className="space-y-1 text-center">
+                      <div className="flex flex-col items-center">
+                        {imagePreview ? (
+                          <div className="relative w-full h-32 mb-4">
+                            <img 
+                              src={imagePreview} 
+                              alt="Preview" 
+                              className="h-32 object-contain mx-auto"
+                            />
+                            <Button 
+                              variant="destructive" 
+                              size="sm" 
+                              className="absolute top-0 right-0"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setImageFile(null);
+                                setImagePreview(null);
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        ) : (
+                          <Image className="mx-auto h-12 w-12 text-gray-400" />
+                        )}
+                        <p className="text-sm text-gray-500">
+                          <span className="font-medium text-blue-600 hover:text-blue-500">
+                            Upload a new image
+                          </span>{' '}
+                          or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 10MB
+                        </p>
+                      </div>
+                    </div>
+                    <Input
+                      id="edit-image"
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                </label>
+              </div>
             </div>
             <div>
               <Label htmlFor="edit-content">Content</Label>
@@ -419,11 +564,16 @@ const AdminBlogPosts = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setIsEditDialogOpen(false);
+              setCurrentPost(null);
+              setImageFile(null);
+              setImagePreview(null);
+            }}>
               Cancel
             </Button>
             <Button onClick={handleEditPost}>
-              Save Changes
+              <Upload className="mr-2 h-4 w-4" /> Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>

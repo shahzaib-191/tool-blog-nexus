@@ -14,7 +14,6 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminBlogPosts from "./pages/admin/AdminBlogPosts";
 import AdminUsers from "./pages/admin/AdminUsers";
 import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
 import NotFound from "./pages/NotFound";
 
 // Context
@@ -35,7 +34,6 @@ const App = () => (
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:postId" element={<BlogPostPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/blog" element={<AdminBlogPosts />} />
             <Route path="/admin/users" element={<AdminUsers />} />
