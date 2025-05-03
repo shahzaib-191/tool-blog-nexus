@@ -12,8 +12,9 @@ import * as LucideIcons from 'lucide-react';
 
 // Import tool components
 import ImageToPdfTool from '@/components/tools/ImageToPdfTool';
+import TextToSpeechTool from '@/components/tools/TextToSpeechTool';
 
-// Basic components for tools that haven't been implemented yet
+// Basic components for tools that haven't been fully implemented yet
 const PDFToWordTool = () => {
   const [file, setFile] = useState<File | null>(null);
   const [converting, setConverting] = useState(false);
@@ -193,6 +194,7 @@ const toolComponents: Record<string, React.FC> = {
   'image-to-pdf': ImageToPdfTool,
   'qr-generator': QRCodeTool,
   'word-counter': WordCounterTool,
+  'text-to-speech': TextToSpeechTool,
   // Add more tool implementations as needed
 };
 

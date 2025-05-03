@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Image, Upload } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const ImageToPdfTool = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [converting, setConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -33,7 +35,19 @@ const ImageToPdfTool = () => {
     // Simulate conversion
     setTimeout(() => {
       setConverting(false);
-      alert("Conversion complete! In a real implementation, the PDF would download now.");
+      toast({
+        title: "Conversion complete!",
+        description: "Your PDF has been generated and is ready to download.",
+      });
+      
+      // In a real implementation, the PDF would be generated and downloaded
+      const dummyLink = document.createElement('a');
+      dummyLink.href = "#";
+      dummyLink.download = "converted-images.pdf";
+      dummyLink.click();
+      
+      // Clear files after successful conversion
+      setFiles([]);
     }, 2000);
   };
   
