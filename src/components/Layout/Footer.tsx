@@ -27,13 +27,16 @@ const Footer = () => {
                 <Link to="/" className="text-gray-300 hover:text-white transition-colors">Home</Link>
               </li>
               <li>
+                <Link to="/all-tools" className="text-gray-300 hover:text-white transition-colors">All Tools</Link>
+              </li>
+              <li>
                 <Link to="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link>
               </li>
               <li>
-                <Link to="/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
+                <Link to="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
               </li>
               <li>
-                <Link to="/register" className="text-gray-300 hover:text-white transition-colors">Register</Link>
+                <Link to="/login" className="text-gray-300 hover:text-white transition-colors">Login</Link>
               </li>
             </ul>
           </div>
@@ -43,22 +46,22 @@ const Footer = () => {
             <h3 className="text-xl font-semibold mb-4">Tool Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/?category=Productivity%20%26%20Utility" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/all-tools?category=Productivity%20%26%20Utility" className="text-gray-300 hover:text-white transition-colors">
                   Productivity & Utility
                 </Link>
               </li>
               <li>
-                <Link to="/?category=SEO%20%26%20Marketing" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/all-tools?category=SEO%20%26%20Marketing" className="text-gray-300 hover:text-white transition-colors">
                   SEO & Marketing
                 </Link>
               </li>
               <li>
-                <Link to="/?category=Image%20%26%20Video" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/all-tools?category=Image%20%26%20Video" className="text-gray-300 hover:text-white transition-colors">
                   Image & Video
                 </Link>
               </li>
               <li>
-                <Link to="/?category=AI%20%26%20Writing" className="text-gray-300 hover:text-white transition-colors">
+                <Link to="/all-tools?category=AI%20%26%20Writing" className="text-gray-300 hover:text-white transition-colors">
                   AI & Writing
                 </Link>
               </li>

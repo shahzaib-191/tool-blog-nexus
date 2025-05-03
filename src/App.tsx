@@ -15,6 +15,8 @@ import AdminBlogPosts from "./pages/admin/AdminBlogPosts";
 import AdminUsers from "./pages/admin/AdminUsers";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
+import AboutPage from "./pages/AboutPage";
+import AllToolsPage from "./pages/AllToolsPage";
 
 // Context
 import { AuthProvider } from "./context/AuthContext";
@@ -37,6 +39,8 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/blog" element={<AdminBlogPosts />} />
             <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/all-tools" element={<AllToolsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

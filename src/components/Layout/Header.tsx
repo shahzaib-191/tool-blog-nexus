@@ -38,10 +38,22 @@ const Header = () => {
               Home
             </Link>
             <Link 
+              to="/all-tools" 
+              className="text-gray-700 hover:text-tool-blue transition-colors"
+            >
+              All Tools
+            </Link>
+            <Link 
               to="/blog" 
               className="text-gray-700 hover:text-tool-blue transition-colors"
             >
               Blog
+            </Link>
+            <Link 
+              to="/about" 
+              className="text-gray-700 hover:text-tool-blue transition-colors"
+            >
+              About
             </Link>
           </nav>
 
@@ -99,11 +111,25 @@ const Header = () => {
               Home
             </Link>
             <Link
+              to="/all-tools"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              All Tools
+            </Link>
+            <Link
               to="/blog"
               className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
               Blog
+            </Link>
+            <Link
+              to="/about"
+              className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              About
             </Link>
             
             {/* User Actions - Mobile */}
