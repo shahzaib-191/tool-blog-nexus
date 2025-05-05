@@ -19,6 +19,14 @@ import ImageCompressorTool from './ImageCompressorTool';
 import ImageResizerTool from './ImageResizerTool';
 import BackgroundRemoverTool from './BackgroundRemoverTool';
 import VideoToGifTool from './VideoToGifTool';
+import JsonFormatterTool from './JsonFormatterTool';
+import AITextGeneratorTool from './AITextGeneratorTool';
+import AIParaphraserTool from './AIParaphraserTool';
+import PasswordGeneratorTool from './PasswordGeneratorTool';
+import CodeMinifierTool from './CodeMinifierTool';
+import LoremIpsumGeneratorTool from './LoremIpsumGeneratorTool';
+import SpeechToTextTool from './SpeechToTextTool';
+import OnlineNotepadTool from './OnlineNotepadTool';
 
 // Map tool IDs to their component implementations
 const toolComponents: Record<string, React.FC> = {
@@ -28,6 +36,8 @@ const toolComponents: Record<string, React.FC> = {
   'qr-generator': QRCodeTool,
   'word-counter': WordCounterTool,
   'text-to-speech': TextToSpeechTool,
+  'speech-to-text': SpeechToTextTool,
+  'online-notepad': OnlineNotepadTool,
   'meta-tag-generator': MetaTagGeneratorTool,
   'plagiarism-checker': PlagiarismCheckerTool,
   'ai-blog-idea': AIBlogIdeaGeneratorTool,
@@ -38,6 +48,12 @@ const toolComponents: Record<string, React.FC> = {
   'image-resizer': ImageResizerTool,
   'background-remover': BackgroundRemoverTool,
   'video-to-gif': VideoToGifTool,
+  'json-formatter': JsonFormatterTool,
+  'ai-text-generator': AITextGeneratorTool,
+  'ai-paraphraser': AIParaphraserTool,
+  'password-generator': PasswordGeneratorTool,
+  'css-minifier': CodeMinifierTool,
+  'lorem-ipsum': LoremIpsumGeneratorTool,
   // Add more tool implementations as needed
 };
 
