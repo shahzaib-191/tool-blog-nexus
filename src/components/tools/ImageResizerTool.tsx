@@ -1,427 +1,432 @@
 
-import { useState, useRef, ChangeEvent } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Maximize, Upload, Download, Image, Info, Lock, Unlock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/components/ui/use-toast';
+import { Download, Upload, Lock, Unlock, ImageIcon } from 'lucide-react';
+import ToolHeader from './ToolHeader';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface ResizeResult {
-  originalImage: string;
-  resizedImage: string;
-  originalWidth: number;
-  originalHeight: number;
-  newWidth: number;
-  newHeight: number;
-  originalSize: number;
-  newSize: number;
-  fileName: string;
-}
-
-// Helper function to format file size
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return bytes + ' B';
-  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  else return (bytes / 1048576).toFixed(1) + ' MB';
-};
-
-const ImageResizerTool = () => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [originalDimensions, setOriginalDimensions] = useState({ width: 0, height: 0 });
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [maintainAspectRatio, setMaintainAspectRatio] = useState(true);
-  const [resizeMode, setResizeMode] = useState<'dimensions' | 'percentage'>('dimensions');
-  const [percentage, setPercentage] = useState(100);
-  const [resizeResult, setResizeResult] = useState<ResizeResult | null>(null);
-  const [isResizing, setIsResizing] = useState(false);
-  
+const ImageResizerTool: React.FC = () => {
+  const { toast } = useToast();
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [resizedImage, setResizedImage] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const [fileName, setFileName] = useState<string>('');
+  const [fileType, setFileType] = useState<string>('image/jpeg');
   
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      
-      // Check if the file is an image
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select an image file",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Set the selected file
-      setSelectedFile(file);
-      
-      // Reset any previous resize result
-      setResizeResult(null);
-      
-      // Create a preview URL
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-      
-      // Get the image dimensions when it loads
-      const img = new Image();
-      img.onload = () => {
-        setOriginalDimensions({ width: img.width, height: img.height });
-        setDimensions({ width: img.width, height: img.height });
-      };
-      img.src = objectUrl;
-    }
-  };
-  
-  const handleWidthChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newWidth = parseInt(e.target.value) || 0;
-    
-    if (maintainAspectRatio && originalDimensions.width > 0) {
-      const aspectRatio = originalDimensions.width / originalDimensions.height;
-      const newHeight = Math.round(newWidth / aspectRatio);
-      setDimensions({ width: newWidth, height: newHeight });
-    } else {
-      setDimensions({ ...dimensions, width: newWidth });
-    }
-  };
-  
-  const handleHeightChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newHeight = parseInt(e.target.value) || 0;
-    
-    if (maintainAspectRatio && originalDimensions.height > 0) {
-      const aspectRatio = originalDimensions.width / originalDimensions.height;
-      const newWidth = Math.round(newHeight * aspectRatio);
-      setDimensions({ width: newWidth, height: newHeight });
-    } else {
-      setDimensions({ ...dimensions, height: newHeight });
-    }
-  };
-  
-  const handlePercentageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newPercentage = parseInt(e.target.value) || 0;
-    setPercentage(newPercentage);
-    
-    // Update dimensions based on percentage
-    if (originalDimensions.width > 0 && originalDimensions.height > 0) {
-      const newWidth = Math.round((originalDimensions.width * newPercentage) / 100);
-      const newHeight = Math.round((originalDimensions.height * newPercentage) / 100);
-      setDimensions({ width: newWidth, height: newHeight });
-    }
-  };
-  
-  const handleResize = async () => {
-    if (!selectedFile || !previewUrl || dimensions.width <= 0 || dimensions.height <= 0) {
+  // Image dimensions
+  const [originalWidth, setOriginalWidth] = useState(0);
+  const [originalHeight, setOriginalHeight] = useState(0);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
+  const [aspectLocked, setAspectLocked] = useState(true);
+  const [resizeMethod, setResizeMethod] = useState<string>('dimensions');
+  const [resizePercentage, setResizePercentage] = useState<number>(50);
+  const [presetSize, setPresetSize] = useState<string>('custom');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.match('image.*')) {
       toast({
-        title: "Invalid parameters",
-        description: "Please select an image and specify valid dimensions",
+        title: "Invalid file type",
+        description: "Please select an image file",
         variant: "destructive",
       });
       return;
     }
-    
-    setIsResizing(true);
-    
-    try {
-      // Create a new image element to load the file
-      const img = new Image();
-      img.src = previewUrl;
-      
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-      
-      // Create a canvas with the desired dimensions
-      const canvas = document.createElement('canvas');
-      canvas.width = dimensions.width;
-      canvas.height = dimensions.height;
-      
-      // Draw the image on the canvas
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error("Failed to get canvas context");
-      
-      ctx.drawImage(img, 0, 0, dimensions.width, dimensions.height);
-      
-      // Convert canvas to a Blob
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((result) => {
-          if (result) {
-            resolve(result);
-          } else {
-            reject(new Error("Failed to convert canvas to blob"));
-          }
-        }, selectedFile.type);
-      });
-      
-      // Create object URL for the resized image
-      const resizedImageUrl = URL.createObjectURL(blob);
-      
-      // Set the resize result
-      setResizeResult({
-        originalImage: previewUrl,
-        resizedImage: resizedImageUrl,
-        originalWidth: originalDimensions.width,
-        originalHeight: originalDimensions.height,
-        newWidth: dimensions.width,
-        newHeight: dimensions.height,
-        originalSize: selectedFile.size,
-        newSize: blob.size,
-        fileName: selectedFile.name,
-      });
-      
-      toast({
-        title: "Image Resized",
-        description: `New dimensions: ${dimensions.width}x${dimensions.height} pixels`,
-      });
-    } catch (error) {
-      console.error("Resize failed:", error);
-      toast({
-        title: "Resize Failed",
-        description: "Failed to resize the image",
-        variant: "destructive",
-      });
-    } finally {
-      setIsResizing(false);
+
+    setFileName(file.name);
+    setFileType(file.type);
+    setResizedImage(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        const img = document.createElement('img');
+        img.onload = () => {
+          setOriginalWidth(img.width);
+          setOriginalHeight(img.height);
+          setWidth(img.width);
+          setHeight(img.height);
+        };
+        img.src = event.target.result as string;
+        setOriginalImage(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const updateDimensions = (newWidth: number, newHeight: number, updateSource: 'width' | 'height' | 'both') => {
+    if (updateSource === 'width') {
+      setWidth(newWidth);
+      if (aspectLocked && originalWidth > 0) {
+        const ratio = originalHeight / originalWidth;
+        setHeight(Math.round(newWidth * ratio));
+      }
+    } else if (updateSource === 'height') {
+      setHeight(newHeight);
+      if (aspectLocked && originalHeight > 0) {
+        const ratio = originalWidth / originalHeight;
+        setWidth(Math.round(newHeight * ratio));
+      }
+    } else {
+      setWidth(newWidth);
+      setHeight(newHeight);
     }
   };
-  
-  const downloadResizedImage = () => {
-    if (!resizeResult) return;
+
+  const handleWidthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newWidth = parseInt(e.target.value) || 0;
+    updateDimensions(newWidth, height, 'width');
+  };
+
+  const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newHeight = parseInt(e.target.value) || 0;
+    updateDimensions(width, newHeight, 'height');
+  };
+
+  const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const percentage = parseInt(e.target.value) || 0;
+    setResizePercentage(percentage);
+    
+    // Update dimensions based on percentage
+    if (originalWidth > 0 && originalHeight > 0) {
+      const newWidth = Math.round(originalWidth * (percentage / 100));
+      const newHeight = Math.round(originalHeight * (percentage / 100));
+      updateDimensions(newWidth, newHeight, 'both');
+    }
+  };
+
+  const handlePresetChange = (value: string) => {
+    setPresetSize(value);
+    
+    if (value === 'custom') return;
+    
+    const [presetWidth, presetHeight] = value.split('x').map(Number);
+    updateDimensions(presetWidth, presetHeight, 'both');
+  };
+
+  const toggleAspectLock = () => {
+    setAspectLocked(!aspectLocked);
+  };
+
+  const resizeImage = () => {
+    if (!originalImage) return;
+    
+    setIsProcessing(true);
+    setProgress(0);
+    
+    // Simulate resizing with progress updates
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return 90;
+        }
+        return prev + 15;
+      });
+    }, 200);
+    
+    // Simulate image resizing (in a real app, you'd use an actual resizing library)
+    setTimeout(() => {
+      try {
+        const img = document.createElement('img');
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          
+          // Set canvas dimensions to target size
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw image on canvas with new dimensions
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to data URL
+          const resizedDataUrl = canvas.toDataURL(fileType);
+          
+          setResizedImage(resizedDataUrl);
+          setProgress(100);
+          setIsProcessing(false);
+          
+          toast({
+            title: "Success",
+            description: "Image resized successfully!",
+            variant: "default",
+          });
+        };
+        
+        img.src = originalImage;
+      } catch (error) {
+        console.error("Error resizing image:", error);
+        setIsProcessing(false);
+        setProgress(0);
+        toast({
+          title: "Error",
+          description: "Failed to resize image",
+          variant: "destructive",
+        });
+      }
+    }, 1000);
+  };
+
+  const downloadImage = () => {
+    if (!resizedImage) return;
+    
+    const fileExtension = fileType.split('/')[1] || 'jpg';
+    const baseFileName = fileName.split('.')[0] || 'resized-image';
     
     const link = document.createElement('a');
-    link.href = resizeResult.resizedImage;
-    
-    // Get the file extension
-    const fileNameParts = resizeResult.fileName.split('.');
-    const extension = fileNameParts.pop();
-    const baseName = fileNameParts.join('.');
-    
-    link.download = `${baseName}-resized-${resizeResult.newWidth}x${resizeResult.newHeight}.${extension}`;
+    link.href = resizedImage;
+    link.download = `${baseFileName}-resized.${fileExtension}`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
-  
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
-    <div className="container mx-auto">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="flex items-center justify-center gap-2">
-            <Maximize className="h-5 w-5" />
-            Image Resizer
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">Resize images to exact dimensions</p>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue={resizeResult ? "result" : "upload"} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Upload & Resize</TabsTrigger>
-              <TabsTrigger value="result" disabled={!resizeResult}>Result</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upload" className="space-y-6">
-              {/* Image Upload Area */}
-              <div 
-                className={cn(
-                  "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
-                  "transition-all hover:border-primary/50",
-                  previewUrl ? "border-primary/40 bg-primary/5" : "border-muted-foreground/30"
-                )}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {previewUrl ? (
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="relative aspect-video w-full max-w-sm mx-auto">
-                      <img 
-                        ref={imgRef}
-                        src={previewUrl} 
-                        alt="Preview" 
-                        className="max-h-48 mx-auto object-contain"
-                      />
-                    </div>
-                    <div className="text-sm">
-                      <p className="font-medium">{selectedFile?.name}</p>
-                      <p className="text-muted-foreground">
-                        {originalDimensions.width} x {originalDimensions.height} px • {formatFileSize(selectedFile?.size || 0)}
-                      </p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewUrl(null);
-                        setSelectedFile(null);
-                        setResizeResult(null);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                      }}
-                    >
-                      Change Image
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="rounded-full bg-primary/10 p-4">
-                      <Upload className="h-8 w-8 text-primary/80" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Click to upload an image</p>
-                      <p className="text-xs text-muted-foreground">JPG, PNG, WebP, or GIF</p>
-                    </div>
-                  </div>
-                )}
-                
-                <Input 
-                  ref={fileInputRef}
+    <>
+      <ToolHeader 
+        title="Image Resizer" 
+        description="Resize your images to exact dimensions while maintaining quality."
+      />
+
+      <div className="container mx-auto px-4 py-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid gap-6">
+              {/* File Upload */}
+              <div className="text-center">
+                <input 
                   type="file" 
-                  accept="image/*" 
+                  ref={fileInputRef}
                   onChange={handleFileChange}
-                  className="hidden" 
+                  accept="image/*"
+                  className="hidden"
                 />
+                
+                <div 
+                  onClick={triggerFileInput}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:border-blue-400 transition-colors"
+                >
+                  <div className="flex flex-col items-center">
+                    <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-lg font-medium">Upload an image</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Drop your image here, or click to browse
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Supports JPG, PNG - Max 10MB
+                    </p>
+                  </div>
+                </div>
               </div>
               
-              {/* Resize Controls */}
-              {previewUrl && (
-                <div className="space-y-6">
-                  <RadioGroup 
-                    value={resizeMode} 
-                    onValueChange={(value) => setResizeMode(value as 'dimensions' | 'percentage')}
-                    className="flex flex-col space-y-1"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="dimensions" id="dimensions" />
-                      <Label htmlFor="dimensions">Custom Dimensions</Label>
+              {/* Resize Options */}
+              {originalImage && (
+                <>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <div className="mb-2">
+                      <p className="text-sm font-medium">Original dimensions: {originalWidth} × {originalHeight} px</p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="percentage" id="percentage" />
-                      <Label htmlFor="percentage">Scale by Percentage</Label>
-                    </div>
-                  </RadioGroup>
-                  
-                  {resizeMode === 'dimensions' ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm">Maintain aspect ratio</Label>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setMaintainAspectRatio(!maintainAspectRatio)}
-                            className="h-8 w-8"
+                    
+                    <Tabs value={resizeMethod} onValueChange={setResizeMethod} className="mt-4">
+                      <TabsList className="mb-4">
+                        <TabsTrigger value="dimensions">Custom Dimensions</TabsTrigger>
+                        <TabsTrigger value="percentage">Percentage</TabsTrigger>
+                        <TabsTrigger value="presets">Presets</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="dimensions">
+                        <div className="grid grid-cols-2 gap-4 items-center">
+                          <div>
+                            <Label htmlFor="width">Width (px)</Label>
+                            <Input
+                              id="width"
+                              type="number"
+                              min="1"
+                              value={width || ''}
+                              onChange={handleWidthChange}
+                              className="mt-1"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="height">Height (px)</Label>
+                            <Input
+                              id="height"
+                              type="number"
+                              min="1"
+                              value={height || ''}
+                              onChange={handleHeightChange}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="flex justify-center mt-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={toggleAspectLock}
+                            className="flex items-center gap-1 text-xs"
                           >
-                            {maintainAspectRatio ? (
-                              <Lock className="h-4 w-4" />
+                            {aspectLocked ? (
+                              <>
+                                <Lock className="h-3 w-3" />
+                                Aspect Ratio Locked
+                              </>
                             ) : (
-                              <Unlock className="h-4 w-4" />
+                              <>
+                                <Unlock className="h-3 w-3" />
+                                Aspect Ratio Unlocked
+                              </>
                             )}
                           </Button>
-                          <Checkbox 
-                            checked={maintainAspectRatio}
-                            onCheckedChange={(checked) => setMaintainAspectRatio(checked === true)}
-                          />
                         </div>
-                      </div>
+                      </TabsContent>
                       
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="width">Width (px)</Label>
-                          <Input 
-                            id="width"
-                            type="number"
-                            value={dimensions.width || ''}
-                            onChange={handleWidthChange}
+                      <TabsContent value="percentage">
+                        <div>
+                          <Label htmlFor="percentage">Resize to {resizePercentage}% of original</Label>
+                          <Input
+                            id="percentage"
+                            type="range"
                             min="1"
+                            max="200"
+                            value={resizePercentage}
+                            onChange={handlePercentageChange}
+                            className="mt-1"
                           />
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1%</span>
+                            <span>100%</span>
+                            <span>200%</span>
+                          </div>
+                          
+                          <p className="mt-4 text-sm">
+                            New dimensions: {width} × {height} px
+                          </p>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="height">Height (px)</Label>
-                          <Input 
-                            id="height"
-                            type="number"
-                            value={dimensions.height || ''}
-                            onChange={handleHeightChange}
-                            min="1"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <Label htmlFor="percentage">Scale (%)</Label>
-                      <Input 
-                        id="percentage"
-                        type="number"
-                        value={percentage}
-                        onChange={handlePercentageChange}
-                        min="1"
-                        max="200"
-                      />
+                      </TabsContent>
                       
-                      <div className="text-sm text-muted-foreground">
-                        New dimensions: {dimensions.width} x {dimensions.height} px
-                      </div>
-                    </div>
-                  )}
+                      <TabsContent value="presets">
+                        <div>
+                          <Label htmlFor="preset-size">Select a preset size</Label>
+                          <Select value={presetSize} onValueChange={handlePresetChange}>
+                            <SelectTrigger className="w-full mt-1">
+                              <SelectValue placeholder="Select a preset size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="custom">Custom</SelectItem>
+                              <SelectItem value="1920x1080">Full HD (1920×1080)</SelectItem>
+                              <SelectItem value="1280x720">HD (1280×720)</SelectItem>
+                              <SelectItem value="800x600">Standard (800×600)</SelectItem>
+                              <SelectItem value="1200x628">Facebook Cover (1200×628)</SelectItem>
+                              <SelectItem value="1080x1080">Instagram Post (1080×1080)</SelectItem>
+                              <SelectItem value="1080x1920">Instagram Story (1080×1920)</SelectItem>
+                              <SelectItem value="400x400">Profile Picture (400×400)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          <p className="mt-4 text-sm">
+                            New dimensions: {width} × {height} px
+                          </p>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </div>
                   
-                  <Button 
-                    className="w-full" 
-                    onClick={handleResize}
-                    disabled={isResizing || !selectedFile || dimensions.width <= 0 || dimensions.height <= 0}
-                  >
-                    {isResizing ? "Resizing..." : "Resize Image"}
-                  </Button>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="result" className="space-y-6">
-              {resizeResult && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium">Original Image</div>
-                      <div className="border rounded-md overflow-hidden bg-black/5 aspect-video flex items-center justify-center">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Original Image */}
+                    <div>
+                      <p className="text-sm font-medium mb-2">Original Image</p>
+                      <div className="bg-gray-100 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
                         <img 
-                          src={resizeResult.originalImage} 
+                          src={originalImage} 
                           alt="Original" 
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {resizeResult.originalWidth} x {resizeResult.originalHeight} px • {formatFileSize(resizeResult.originalSize)}
-                      </div>
                     </div>
                     
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium">Resized Image</div>
-                      <div className="border rounded-md overflow-hidden bg-black/5 aspect-video flex items-center justify-center">
-                        <img 
-                          src={resizeResult.resizedImage} 
-                          alt="Resized" 
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {resizeResult.newWidth} x {resizeResult.newHeight} px • {formatFileSize(resizeResult.newSize)}
+                    {/* Resized Image */}
+                    <div>
+                      <p className="text-sm font-medium mb-2">
+                        Resized Preview
+                        {resizedImage && (
+                          <Badge variant="default" className="ml-2">
+                            {width}×{height}px
+                          </Badge>
+                        )}
+                      </p>
+                      <div className="bg-gray-100 rounded-lg overflow-hidden aspect-video flex items-center justify-center">
+                        {isProcessing ? (
+                          <div className="w-full px-8 text-center">
+                            <p className="mb-2 text-sm">Resizing image...</p>
+                            <Progress value={progress} className="mb-1" />
+                            <p className="text-xs text-gray-500">{progress}% complete</p>
+                          </div>
+                        ) : resizedImage ? (
+                          <img 
+                            src={resizedImage} 
+                            alt="Resized" 
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <div className="text-center text-gray-400">
+                            <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                            <p>Click "Resize Image" to process</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex justify-center">
-                    <Button onClick={downloadResizedImage} className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      Download Resized Image
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button
+                      onClick={resizeImage}
+                      disabled={isProcessing || !originalImage || width <= 0 || height <= 0}
+                      className="flex-1"
+                    >
+                      {isProcessing ? "Resizing..." : "Resize Image"}
                     </Button>
+                    
+                    {resizedImage && (
+                      <Button
+                        variant="outline"
+                        onClick={downloadImage}
+                        className="sm:flex-1"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    )}
                   </div>
-                </div>
+                </>
               )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 };
 

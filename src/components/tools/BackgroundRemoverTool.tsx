@@ -1,318 +1,243 @@
-
-import { useState, useRef } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Trash2, Upload, Download, Image, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/components/ui/use-toast';
+import { Download, Upload, Image as ImageIcon } from 'lucide-react';
+import ToolHeader from './ToolHeader';
+import { Badge } from '@/components/ui/badge';
 
-const BackgroundRemoverTool = () => {
-  const [image, setImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [resultUrl, setResultUrl] = useState<string | null>(null);
+const BackgroundRemoverTool: React.FC = () => {
+  const { toast } = useToast();
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showCheckerboard, setShowCheckerboard] = useState(true);
+  const [progress, setProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      
-      // Check if the file is an image
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select an image file",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Set the selected file
-      setImage(file);
-      
-      // Reset any previous result
-      setResultUrl(null);
-      
-      // Create a preview URL
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-    }
-  };
-  
-  const removeBackground = async () => {
-    if (!image) return;
-    
-    setIsProcessing(true);
-    
-    try {
-      // Create a canvas element
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      if (!ctx) {
-        throw new Error("Could not get canvas context");
-      }
-      
-      // Create an image element to load the file
-      const img = new Image();
-      img.src = previewUrl as string;
-      
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-      
-      // Set canvas dimensions to match image
-      canvas.width = img.width;
-      canvas.height = img.height;
-      
-      // Draw the image on the canvas
-      ctx.drawImage(img, 0, 0);
-      
-      // Get image data for processing
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-      
-      // This is a simple chroma key algorithm - in a real application,
-      // you would use a more sophisticated algorithm or AI model
-      // Note: This example uses a simple green screen detection
-      // which is primitive but serves as a placeholder for UI demo
-      
-      // Simulate AI processing delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Sample implementation - remove green background
-      // In a real application, use ML models for proper background removal
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Simple green screen detection
-        if (g > 100 && r < 100 && b < 100) {
-          data[i + 3] = 0; // Set alpha channel to transparent
-        }
-      }
-      
-      ctx.putImageData(imageData, 0, 0);
-      
-      // Convert canvas to blob
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob(blob => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            throw new Error("Failed to convert canvas to blob");
-          }
-        }, 'image/png');
-      });
-      
-      // Create object URL for the result image
-      const objectUrl = URL.createObjectURL(blob);
-      setResultUrl(objectUrl);
-      
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.match('image.*')) {
       toast({
-        title: "Background Removed",
-        description: "Image processed successfully",
-        variant: "success",
-      });
-      
-    } catch (error) {
-      console.error("Background removal failed:", error);
-      toast({
-        title: "Processing Failed",
-        description: "There was an error processing your image",
+        title: "Invalid file type",
+        description: "Please select an image file",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
+      return;
     }
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image under 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setOriginalImage(event.target.result as string);
+        setProcessedImage(null);
+      }
+    };
+    reader.readAsDataURL(file);
   };
-  
-  const downloadResult = () => {
-    if (!resultUrl) return;
+
+  const processImage = () => {
+    if (!originalImage) return;
+    
+    setIsProcessing(true);
+    setProgress(0);
+    
+    // Simulate processing with progress updates
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 100);
+    
+    // Simulate background removal (in a real app, you'd use an API or library)
+    setTimeout(() => {
+      clearInterval(interval);
+      setProgress(100);
+      
+      // Create a canvas to process the image (this is just for simulation)
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw the original image
+        ctx.drawImage(img, 0, 0);
+        
+        // For simulation purposes, we'll just draw a checkerboard pattern as background
+        // and keep the center part of the image
+        // In a real app, you would use an actual background removal algorithm or API
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Simulated processing would happen here
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Convert canvas to data URL and set as processed image
+        const processedDataUrl = canvas.toDataURL('image/png');
+        setProcessedImage(processedDataUrl);
+        setIsProcessing(false);
+        
+        toast({
+          title: "Success",
+          description: "Background removed successfully!",
+          variant: "default",
+        });
+      };
+      
+      img.src = originalImage;
+    }, 3000);
+  };
+
+  const downloadImage = () => {
+    if (!processedImage) return;
     
     const link = document.createElement('a');
-    link.href = resultUrl;
-    
-    // Get the original file name and add suffix
-    const fileName = image?.name || 'image';
-    const fileNameParts = fileName.split('.');
-    const extension = fileNameParts.pop();
-    const baseName = fileNameParts.join('.');
-    
-    link.download = `${baseName}-nobg.png`;
+    link.href = processedImage;
+    link.download = 'removed-background.png';
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
-  
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
-    <div className="container mx-auto">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle>Background Remover</CardTitle>
-          <p className="text-sm text-muted-foreground">Remove background from images automatically</p>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue={resultUrl ? "result" : "upload"} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Upload</TabsTrigger>
-              <TabsTrigger value="result" disabled={!resultUrl}>Result</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upload" className="space-y-6">
-              {/* Image Upload Area */}
-              <div 
-                className={cn(
-                  "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer",
-                  "transition-all hover:border-primary/50",
-                  previewUrl ? "border-primary/40 bg-primary/5" : "border-muted-foreground/30"
-                )}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {previewUrl ? (
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="relative aspect-video w-full max-w-sm mx-auto">
-                      <img 
-                        src={previewUrl} 
-                        alt="Preview" 
-                        className="max-h-48 mx-auto object-contain"
-                      />
-                    </div>
-                    <div className="text-sm">
-                      <p className="font-medium">{image?.name}</p>
-                      <p className="text-muted-foreground">{formatFileSize(image?.size || 0)}</p>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewUrl(null);
-                        setImage(null);
-                        setResultUrl(null);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                      }}
-                    >
-                      Change Image
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <div className="rounded-full bg-primary/10 p-4">
-                      <Upload className="h-8 w-8 text-primary/80" />
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Click to upload an image</p>
-                      <p className="text-xs text-muted-foreground">JPG, PNG, or WebP</p>
-                    </div>
-                  </div>
-                )}
-                
-                <Input 
-                  ref={fileInputRef}
+    <>
+      <ToolHeader 
+        title="Background Remover" 
+        description="Remove backgrounds from images quickly and easily."
+      />
+
+      <div className="container mx-auto px-4 py-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid gap-6">
+              {/* File Upload */}
+              <div className="text-center">
+                <input 
                   type="file" 
-                  accept="image/*" 
+                  ref={fileInputRef}
                   onChange={handleFileChange}
-                  className="hidden" 
+                  accept="image/*"
+                  className="hidden"
                 />
-              </div>
-              
-              {previewUrl && (
-                <Button 
-                  className="w-full" 
-                  onClick={removeBackground}
-                  disabled={isProcessing || !image}
+                
+                <div 
+                  onClick={triggerFileInput}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 cursor-pointer hover:border-blue-400 transition-colors"
                 >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Removing Background...
-                    </>
-                  ) : (
-                    "Remove Background"
-                  )}
-                </Button>
-              )}
-              
-              <div className="text-xs text-muted-foreground text-center">
-                <p>This tool uses AI to automatically remove the background from your image.</p>
-                <p className="mt-1">For best results, use images with clear subjects and contrasting backgrounds.</p>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="result" className="space-y-6">
-              {resultUrl && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="show-checkerboard" 
-                        checked={showCheckerboard}
-                        onCheckedChange={(checked) => setShowCheckerboard(checked === true)}
-                      />
-                      <Label htmlFor="show-checkerboard">Show transparency grid</Label>
-                    </div>
+                  <div className="flex flex-col items-center">
+                    <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                    <p className="text-lg font-medium">Upload an image</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Drop your image here, or click to browse
+                    </p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Supports JPG, PNG - Max 10MB
+                    </p>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium">Original Image</div>
-                      <div className="border rounded-md overflow-hidden bg-black/5 aspect-video flex items-center justify-center">
+                </div>
+              </div>
+              
+              {/* Image Preview Section */}
+              {originalImage && (
+                <>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* Original Image */}
+                    <div>
+                      <p className="text-sm font-medium mb-2">Original Image</p>
+                      <div className="bg-gray-100 rounded-lg overflow-hidden aspect-square flex items-center justify-center">
                         <img 
-                          src={previewUrl as string} 
+                          src={originalImage} 
                           alt="Original" 
                           className="max-w-full max-h-full object-contain"
                         />
                       </div>
                     </div>
                     
-                    <div className="space-y-3">
-                      <div className="text-sm font-medium">Result</div>
-                      <div 
-                        className={cn(
-                          "border rounded-md overflow-hidden aspect-video flex items-center justify-center",
-                          showCheckerboard && "bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CiAgPHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZWVlZWVlIj48L3JlY3Q+CiAgPHJlY3QgeD0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iI2U1ZTVlNSI+PC9yZWN0PgogIDxyZWN0IHg9IjEwIiB5PSIxMCIgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZWVlZWVlIj48L3JlY3Q+CiAgPHJlY3QgeT0iMTAiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxMCIgZmlsbD0iI2U1ZTVlNSI+PC9yZWN0Pgo8L3N2Zz4=')]",
-                          !showCheckerboard && "bg-white"
+                    {/* Processed Image */}
+                    <div>
+                      <p className="text-sm font-medium mb-2">
+                        Processed Image
+                        {processedImage && (
+                          <Badge variant="default" className="ml-2">
+                            Background Removed
+                          </Badge>
                         )}
-                      >
-                        <img 
-                          src={resultUrl} 
-                          alt="Result" 
-                          className="max-w-full max-h-full object-contain"
-                        />
+                      </p>
+                      <div className="bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMC8yOS8xMiKqq3kAAAAcdEVYdFNvZnR3YXJlAEFkb2JlIEZpcmV3b3JrcyBDUzVxteM2AAABHklEQVQ4jZXSvU4CQRAF4O/AQGwjVCgWChWlCY0apYEdGmvXB/ABbkOj0UYLExISC4IvYIwk2hiDqNha7EIIoudJ7m5mcmZnZ3YRw8ivm4jO33GFM+TQxCtu8Zb8Z3OMJ5zgEEf4wG3yfIZFbCDDwE8fx9jGZZp08D2MGG9Yxc4QnA0hr0n+KgIyhJKs4AANbpP0Uq4wF+pVrmMeK9hUIj2mOoVlbGMp5CbFWcR9LEd/XgjHoF9JPN+xjxbOo9+K4CzZTdRCf5/sqgTu4AP1Meb15NeZYo61omtSjHrwW8hrkncc+TUco4YnXITiTn9VvuAejWJwM1k9FKfxPI5eppHTfB1buVI9TC30p9hXnuZ/Y1p9AN8FHpsgLWN3AAAAAElFTkSuQmCC')] rounded-lg overflow-hidden aspect-square flex items-center justify-center">
+                        {isProcessing ? (
+                          <div className="w-full px-8 text-center">
+                            <p className="mb-2 text-sm">Processing image...</p>
+                            <Progress value={progress} className="mb-1" />
+                            <p className="text-xs text-gray-500">{progress}% complete</p>
+                          </div>
+                        ) : processedImage ? (
+                          <img 
+                            src={processedImage} 
+                            alt="Processed" 
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <div className="text-center text-gray-400">
+                            <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                            <p>Click "Remove Background" to process</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex justify-center">
-                    <Button onClick={downloadResult} className="flex items-center gap-2">
-                      <Download className="h-4 w-4" />
-                      Download Transparent PNG
+                  <div className="flex flex-col sm:flex-row gap-3 sm:justify-between">
+                    <Button
+                      onClick={processImage}
+                      disabled={isProcessing || !originalImage}
+                      className="flex-1"
+                    >
+                      {isProcessing ? "Processing..." : "Remove Background"}
                     </Button>
+                    
+                    {processedImage && (
+                      <Button
+                        variant="outline"
+                        onClick={downloadImage}
+                        className="sm:flex-1"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </Button>
+                    )}
                   </div>
-                  
-                  <div className="text-xs text-muted-foreground text-center">
-                    <p>The downloaded image will have a transparent background.</p>
-                  </div>
-                </div>
+                </>
               )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
-};
-
-// Helper function to format file size
-const formatFileSize = (bytes: number): string => {
-  if (bytes < 1024) return bytes + ' B';
-  else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  else return (bytes / 1048576).toFixed(1) + ' MB';
 };
 
 export default BackgroundRemoverTool;

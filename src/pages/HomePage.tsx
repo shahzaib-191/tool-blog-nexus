@@ -86,6 +86,25 @@ const HomePage = () => {
     setSearchQuery(''); // Reset search when changing tabs
   };
 
+  // Organize trending tools by category
+  const trendingCategories = {
+    'AI & Content Tools': trendingTools.filter(tool => 
+      ['ai-text-generator', 'ai-paraphraser', 'ai-resume-builder', 'ai-story-generator', 'ai-voice-generator'].includes(tool.id)
+    ),
+    'SEO & Marketing': trendingTools.filter(tool => 
+      ['keyword-research', 'plagiarism-checker', 'meta-tag-generator', 'word-counter', 'website-speed-test'].includes(tool.id)
+    ),
+    'Image & Video Tools': trendingTools.filter(tool => 
+      ['background-remover', 'image-compressor', 'video-to-gif', 'image-to-pdf'].includes(tool.id)
+    ),
+    'PDF Tools': trendingTools.filter(tool => 
+      ['pdf-to-word', 'merge-pdf', 'split-pdf'].includes(tool.id)
+    ),
+    'Utility & Developer Tools': trendingTools.filter(tool => 
+      ['json-formatter', 'regex-tester', 'ip-address-finder'].includes(tool.id)
+    ),
+  };
+
   return (
     <MainLayout>
       {/* Hero Section */}
@@ -118,6 +137,33 @@ const HomePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main tools area */}
           <div className="lg:col-span-3">
+            {/* Top Trending Tools Section */}
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold mb-8 text-center">
+                Top Trending Tools Today <span className="text-red-500">(Highly Popular)</span>
+              </h2>
+              
+              <div className="space-y-8">
+                {Object.entries(trendingCategories).map(([category, tools]) => (
+                  <div key={category} className="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 className="text-xl font-semibold mb-4 flex items-center">
+                      {category === 'AI & Content Tools' && <span className="mr-2">🧠</span>}
+                      {category === 'SEO & Marketing' && <span className="mr-2">📈</span>}
+                      {category === 'Image & Video Tools' && <span className="mr-2">📸</span>}
+                      {category === 'PDF Tools' && <span className="mr-2">📝</span>}
+                      {category === 'Utility & Developer Tools' && <span className="mr-2">🔧</span>}
+                      {category}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {tools.map((tool) => (
+                        <ToolCard key={tool.id} tool={tool} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <Tabs defaultValue={activeTab} onValueChange={handleTabChange} value={activeTab} className="mb-8">
               <TabsList className="w-full justify-start overflow-x-auto">
                 <TabsTrigger value="all">All Tools</TabsTrigger>

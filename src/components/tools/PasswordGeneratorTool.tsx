@@ -1,83 +1,112 @@
 
-import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Copy, RefreshCw, ShieldCheck } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Copy, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/components/ui/use-toast';
+import ToolHeader from './ToolHeader';
 
-const PasswordGeneratorTool = () => {
-  const [password, setPassword] = useState<string>('');
-  const [length, setLength] = useState<number>(12);
-  const [useUppercase, setUseUppercase] = useState<boolean>(true);
-  const [useNumbers, setUseNumbers] = useState<boolean>(true);
-  const [useSymbols, setUseSymbols] = useState<boolean>(true);
-  const [strength, setStrength] = useState<number>(0);
-  
-  // Generate password on initial load
-  useState(() => {
+const PasswordGeneratorTool: React.FC = () => {
+  const { toast } = useToast();
+  const [password, setPassword] = useState('');
+  const [passwordLength, setPasswordLength] = useState(16);
+  const [includeUppercase, setIncludeUppercase] = useState(true);
+  const [includeLowercase, setIncludeLowercase] = useState(true);
+  const [includeNumbers, setIncludeNumbers] = useState(true);
+  const [includeSymbols, setIncludeSymbols] = useState(true);
+  const [passwordStrength, setPasswordStrength] = useState<'weak' | 'medium' | 'strong' | 'very-strong'>('medium');
+
+  useEffect(() => {
     generatePassword();
-  });
-  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const generatePassword = () => {
-    const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-    const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    const numberChars = '0123456789';
-    const symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-    
-    let availableChars = lowercaseChars;
-    
-    if (useUppercase) availableChars += uppercaseChars;
-    if (useNumbers) availableChars += numberChars;
-    if (useSymbols) availableChars += symbolChars;
-    
-    if (availableChars === lowercaseChars) {
+    // Ensure at least one character type is selected
+    if (!includeUppercase && !includeLowercase && !includeNumbers && !includeSymbols) {
       toast({
-        title: "Warning",
-        description: "Using only lowercase letters will create a weak password",
-        variant: "warning",
+        title: "Error",
+        description: "Please select at least one character type",
+        variant: "destructive",
       });
+      return;
     }
+
+    // Define character sets
+    const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+    const numberChars = '0123456789';
+    const symbolChars = '!@#$%^&*()-_=+[]{}|;:,.<>?';
+
+    // Create character pool based on selected options
+    let charPool = '';
+    if (includeUppercase) charPool += uppercaseChars;
+    if (includeLowercase) charPool += lowercaseChars;
+    if (includeNumbers) charPool += numberChars;
+    if (includeSymbols) charPool += symbolChars;
+
+    // Generate password
+    let newPassword = '';
+    const charPoolLength = charPool.length;
     
-    let generatedPassword = '';
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * availableChars.length);
-      generatedPassword += availableChars[randomIndex];
+    // Ensure we include at least one character from each selected type
+    if (includeUppercase) 
+      newPassword += uppercaseChars.charAt(Math.floor(Math.random() * uppercaseChars.length));
+    if (includeLowercase) 
+      newPassword += lowercaseChars.charAt(Math.floor(Math.random() * lowercaseChars.length));
+    if (includeNumbers) 
+      newPassword += numberChars.charAt(Math.floor(Math.random() * numberChars.length));
+    if (includeSymbols) 
+      newPassword += symbolChars.charAt(Math.floor(Math.random() * symbolChars.length));
+    
+    // Fill rest of password length with random characters from the pool
+    for (let i = newPassword.length; i < passwordLength; i++) {
+      newPassword += charPool.charAt(Math.floor(Math.random() * charPoolLength));
     }
+
+    // Shuffle the password characters
+    newPassword = newPassword.split('').sort(() => 0.5 - Math.random()).join('');
     
-    setPassword(generatedPassword);
-    calculatePasswordStrength(generatedPassword);
+    setPassword(newPassword);
+    calculatePasswordStrength(newPassword);
   };
-  
-  const calculatePasswordStrength = (pass: string) => {
-    // Simple password strength calculation
-    let score = 0;
+
+  const calculatePasswordStrength = (pwd: string) => {
+    let strength = 0;
     
-    // Length factor (up to 40 points)
-    score += Math.min(40, pass.length * 2);
+    // Length check
+    if (pwd.length >= 8) strength += 1;
+    if (pwd.length >= 12) strength += 1;
+    if (pwd.length >= 16) strength += 1;
     
-    // Character variety
-    if (/[A-Z]/.test(pass)) score += 15;   // Has uppercase
-    if (/[0-9]/.test(pass)) score += 15;   // Has numbers
-    if (/[^A-Za-z0-9]/.test(pass)) score += 20;   // Has symbols
+    // Character variety check
+    if (/[A-Z]/.test(pwd)) strength += 1;
+    if (/[a-z]/.test(pwd)) strength += 1;
+    if (/[0-9]/.test(pwd)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(pwd)) strength += 1;
     
-    // Variety of characters (up to 10 points)
-    const uniqueChars = new Set(pass).size;
-    score += Math.min(10, uniqueChars);
-    
-    setStrength(Math.min(100, score));
+    // Set strength category
+    if (strength <= 3) setPasswordStrength('weak');
+    else if (strength <= 5) setPasswordStrength('medium');
+    else if (strength <= 7) setPasswordStrength('strong');
+    else setPasswordStrength('very-strong');
   };
-  
-  const getStrengthLabel = () => {
-    if (strength < 40) return { label: "Very Weak", color: "bg-red-500" };
-    if (strength < 60) return { label: "Weak", color: "bg-orange-500" };
-    if (strength < 80) return { label: "Good", color: "bg-yellow-500" };
-    return { label: "Strong", color: "bg-green-500" };
+
+  const getStrengthColor = () => {
+    switch (passwordStrength) {
+      case 'weak': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'strong': return 'bg-green-500';
+      case 'very-strong': return 'bg-green-600';
+      default: return 'bg-gray-300';
+    }
   };
-  
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(password);
     toast({
@@ -87,95 +116,134 @@ const PasswordGeneratorTool = () => {
   };
 
   return (
-    <div className="container max-w-md mx-auto">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="flex justify-center items-center gap-2">
-            <ShieldCheck className="h-5 w-5" />
-            Password Generator
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">Create strong, secure passwords</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center">
-            <div className="w-full bg-slate-100 dark:bg-slate-800 p-3 rounded-l-md font-mono text-lg">
-              {password}
-            </div>
-            <Button 
-              variant="outline" 
-              className="rounded-l-none" 
-              onClick={copyToClipboard}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span>Password Strength:</span>
-              <span>{getStrengthLabel().label}</span>
-            </div>
-            <Progress value={strength} className={getStrengthLabel().color} />
-          </div>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label>Password Length: {length}</Label>
-              </div>
-              <Slider
-                value={[length]}
-                min={4}
-                max={32}
-                step={1}
-                onValueChange={(values) => setLength(values[0])}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Options</Label>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="uppercase" 
-                    checked={useUppercase}
-                    onCheckedChange={(checked) => setUseUppercase(!!checked)}
+    <>
+      <ToolHeader 
+        title="Password Generator" 
+        description="Create strong, secure passwords for your accounts."
+      />
+
+      <div className="container mx-auto px-4 py-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid gap-6">
+              {/* Password Display */}
+              <div>
+                <Label>Generated Password</Label>
+                <div className="flex mt-1">
+                  <Input
+                    value={password}
+                    readOnly
+                    className="font-mono text-base"
                   />
-                  <Label htmlFor="uppercase">Include uppercase letters (A-Z)</Label>
+                  <Button variant="outline" onClick={copyToClipboard} className="ml-2 whitespace-nowrap">
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy
+                  </Button>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="numbers" 
-                    checked={useNumbers}
-                    onCheckedChange={(checked) => setUseNumbers(!!checked)}
-                  />
-                  <Label htmlFor="numbers">Include numbers (0-9)</Label>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="symbols" 
-                    checked={useSymbols}
-                    onCheckedChange={(checked) => setUseSymbols(!!checked)}
-                  />
-                  <Label htmlFor="symbols">Include symbols (!@#$%...)</Label>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">Strength:</span>
+                    <Badge variant={passwordStrength === 'weak' ? 'destructive' : 'default'} className="capitalize">
+                      {passwordStrength}
+                    </Badge>
+                  </div>
+                  
+                  <div className="w-1/2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${getStrengthColor()}`} 
+                      style={{ 
+                        width: passwordStrength === 'weak' ? '25%' : 
+                               passwordStrength === 'medium' ? '50%' : 
+                               passwordStrength === 'strong' ? '75%' : '100%' 
+                      }} 
+                    />
+                  </div>
                 </div>
               </div>
+              
+              {/* Settings */}
+              <div className="bg-gray-50 p-4 rounded-md">
+                <Label className="mb-3 block">Password Settings</Label>
+                
+                <div className="mb-6">
+                  <div className="flex justify-between mb-1">
+                    <span>Length: {passwordLength}</span>
+                  </div>
+                  <Slider 
+                    value={[passwordLength]} 
+                    min={6} 
+                    max={32} 
+                    step={1} 
+                    onValueChange={(value) => setPasswordLength(value[0])} 
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>6</span>
+                    <span>16</span>
+                    <span>32</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="include-uppercase" className="cursor-pointer">Include Uppercase Letters (A-Z)</Label>
+                    <Switch 
+                      id="include-uppercase" 
+                      checked={includeUppercase} 
+                      onCheckedChange={setIncludeUppercase} 
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="include-lowercase" className="cursor-pointer">Include Lowercase Letters (a-z)</Label>
+                    <Switch 
+                      id="include-lowercase" 
+                      checked={includeLowercase} 
+                      onCheckedChange={setIncludeLowercase} 
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="include-numbers" className="cursor-pointer">Include Numbers (0-9)</Label>
+                    <Switch 
+                      id="include-numbers" 
+                      checked={includeNumbers} 
+                      onCheckedChange={setIncludeNumbers} 
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="include-symbols" className="cursor-pointer">Include Symbols (!@#$%)</Label>
+                    <Switch 
+                      id="include-symbols" 
+                      checked={includeSymbols} 
+                      onCheckedChange={setIncludeSymbols} 
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Generate Button */}
+              <Button onClick={generatePassword} className="w-full">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Generate New Password
+              </Button>
+              
+              {/* Tips */}
+              <div className="text-sm text-gray-600 space-y-2 bg-blue-50 p-4 rounded-md">
+                <p className="font-medium">Password Security Tips:</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>Use a different password for each account</li>
+                  <li>Never share your passwords with others</li>
+                  <li>Consider using a password manager</li>
+                  <li>Enable two-factor authentication when available</li>
+                </ul>
+              </div>
             </div>
-            
-            <Button className="w-full" onClick={generatePassword}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Generate New Password
-            </Button>
-          </div>
-          
-          <div className="text-xs text-muted-foreground text-center pt-2">
-            All passwords are generated client-side and are not stored or transmitted.
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 };
 

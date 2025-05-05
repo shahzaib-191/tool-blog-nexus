@@ -1,139 +1,206 @@
 
 import { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import ToolHeader from './ToolHeader';
 
-const JsonFormatterTool = () => {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [isValid, setIsValid] = useState<boolean | null>(null);
+const JsonFormatterTool: React.FC = () => {
+  const [inputJson, setInputJson] = useState('');
+  const [outputJson, setOutputJson] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [indentSize, setIndentSize] = useState(2);
+  const [copied, setCopied] = useState(false);
 
   const formatJson = () => {
     try {
-      // Parse JSON to validate it
-      const parsedJson = JSON.parse(input);
+      if (!inputJson.trim()) {
+        setError('Please enter JSON to format');
+        setOutputJson('');
+        return;
+      }
       
-      // Format with indentation
-      const formattedJson = JSON.stringify(parsedJson, null, 2);
-      
-      setOutput(formattedJson);
-      setIsValid(true);
-      
-      toast({
-        title: "JSON is valid",
-        description: "Your JSON has been formatted successfully",
-        variant: "success",
-      });
-    } catch (error) {
-      setIsValid(false);
-      setOutput('');
-      
-      toast({
-        title: "Invalid JSON",
-        description: error instanceof Error ? error.message : "Please check your JSON syntax",
-        variant: "destructive",
-      });
+      const parsedJson = JSON.parse(inputJson);
+      const formattedJson = JSON.stringify(parsedJson, null, indentSize);
+      setOutputJson(formattedJson);
+      setError(null);
+    } catch (err) {
+      setError('Invalid JSON: ' + (err as Error).message);
+      setOutputJson('');
     }
   };
-  
+
+  const validateJson = () => {
+    try {
+      if (!inputJson.trim()) {
+        setError('Please enter JSON to validate');
+        return false;
+      }
+      
+      JSON.parse(inputJson);
+      setError(null);
+      return true;
+    } catch (err) {
+      setError('Invalid JSON: ' + (err as Error).message);
+      return false;
+    }
+  };
+
   const minifyJson = () => {
     try {
-      // Parse JSON to validate it
-      const parsedJson = JSON.parse(input);
+      if (!inputJson.trim()) {
+        setError('Please enter JSON to minify');
+        setOutputJson('');
+        return;
+      }
       
-      // Minify (no whitespace)
+      const parsedJson = JSON.parse(inputJson);
       const minifiedJson = JSON.stringify(parsedJson);
-      
-      setOutput(minifiedJson);
-      setIsValid(true);
-      
-      toast({
-        title: "JSON is valid",
-        description: "Your JSON has been minified successfully",
-        variant: "success",
-      });
-    } catch (error) {
-      setIsValid(false);
-      setOutput('');
-      
-      toast({
-        title: "Invalid JSON",
-        description: error instanceof Error ? error.message : "Please check your JSON syntax",
-        variant: "destructive",
-      });
+      setOutputJson(minifiedJson);
+      setError(null);
+    } catch (err) {
+      setError('Invalid JSON: ' + (err as Error).message);
+      setOutputJson('');
     }
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(output);
-    toast({
-      title: "Copied!",
-      description: "JSON copied to clipboard",
-    });
-  };
-
-  const clearAll = () => {
-    setInput('');
-    setOutput('');
-    setIsValid(null);
+    navigator.clipboard.writeText(outputJson);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="container max-w-4xl mx-auto">
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle>JSON Formatter / Validator</CardTitle>
-          <p className="text-sm text-muted-foreground">Format, validate or minify JSON data</p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
+    <>
+      <ToolHeader 
+        title="JSON Formatter / Validator" 
+        description="Format, validate and beautify JSON data"
+      />
+
+      <div className="container mx-auto px-4 py-6">
+        <Tabs defaultValue="format" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="format">Format</TabsTrigger>
+            <TabsTrigger value="validate">Validate</TabsTrigger>
+            <TabsTrigger value="minify">Minify</TabsTrigger>
+          </TabsList>
+          
+          <div className="mt-6 grid md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="input" className="block text-sm font-medium mb-2">
-                Input JSON
-              </label>
-              <textarea
-                id="input"
-                className="min-h-[200px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                placeholder='{"example": "Paste your JSON here"}'
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-              />
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="mb-2 text-sm font-medium">Input JSON</p>
+                  <Textarea 
+                    placeholder="Paste your JSON here..."
+                    value={inputJson}
+                    onChange={(e) => {
+                      setInputJson(e.target.value);
+                      setError(null);
+                    }}
+                    className="h-[300px] font-mono text-sm"
+                  />
+                </CardContent>
+              </Card>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={formatJson}>Format & Validate</Button>
-              <Button variant="outline" onClick={minifyJson}>Minify</Button>
-              <Button variant="outline" onClick={clearAll}>Clear</Button>
+            
+            <div>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-sm font-medium">Output</p>
+                    {outputJson && (
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={copyToClipboard}
+                        className="h-8 gap-1"
+                      >
+                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        {copied ? 'Copied' : 'Copy'}
+                      </Button>
+                    )}
+                  </div>
+                  <Textarea 
+                    value={outputJson}
+                    readOnly
+                    className="h-[300px] font-mono text-sm"
+                    placeholder="Formatted JSON will appear here..."
+                  />
+                </CardContent>
+              </Card>
             </div>
-
-            {isValid !== null && (
-              <div className={`p-2 rounded-md text-white ${isValid ? 'bg-green-500' : 'bg-red-500'}`}>
-                {isValid ? 'JSON is valid!' : 'Invalid JSON. Please check your syntax.'}
-              </div>
-            )}
-
-            {output && (
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label htmlFor="output" className="block text-sm font-medium">
-                    Formatted Result
-                  </label>
-                  <Button variant="ghost" size="sm" onClick={copyToClipboard}>
-                    <Copy className="h-4 w-4 mr-2" /> Copy
-                  </Button>
-                </div>
-                <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded-md overflow-x-auto whitespace-pre-wrap">
-                  <code>{output}</code>
-                </pre>
-              </div>
-            )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          
+          <div className="mt-4">
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            <TabsContent value="format" className="mt-0">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">Indent Size:</span>
+                  {[2, 4, 8].map((size) => (
+                    <Button 
+                      key={size}
+                      variant={indentSize === size ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setIndentSize(size)}
+                      className="h-8 w-8 p-0"
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </div>
+                <Button onClick={formatJson}>Format JSON</Button>
+              </div>
+              
+              {outputJson && !error && (
+                <Badge variant="success" className="mb-2">JSON formatted successfully</Badge>
+              )}
+              
+              <p className="text-sm text-gray-500">
+                Click "Format JSON" to prettify and indent your JSON data.
+              </p>
+            </TabsContent>
+            
+            <TabsContent value="validate" className="mt-0">
+              <div className="flex justify-end mb-4">
+                <Button onClick={validateJson}>Validate JSON</Button>
+              </div>
+              
+              {inputJson && !error && (
+                <Badge variant="success" className="mb-2">Valid JSON ✓</Badge>
+              )}
+              
+              <p className="text-sm text-gray-500">
+                Check if your JSON is valid and correctly formatted.
+              </p>
+            </TabsContent>
+            
+            <TabsContent value="minify" className="mt-0">
+              <div className="flex justify-end mb-4">
+                <Button onClick={minifyJson}>Minify JSON</Button>
+              </div>
+              
+              {outputJson && !error && (
+                <Badge variant="success" className="mb-2">JSON minified successfully</Badge>
+              )}
+              
+              <p className="text-sm text-gray-500">
+                Remove all whitespace to create a compact version of your JSON.
+              </p>
+            </TabsContent>
+          </div>
+        </Tabs>
+      </div>
+    </>
   );
 };
 
