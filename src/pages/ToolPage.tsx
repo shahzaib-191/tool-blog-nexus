@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
 import { getToolById, Tool } from '@/services/toolsService';
@@ -43,9 +43,11 @@ const ToolPage = () => {
           <ToolLoading />
         ) : tool ? (
           <>
-            <ToolHeader tool={tool} />
+            {tool && <ToolHeader tool={tool} />}
             <div className="bg-white p-6 rounded-lg shadow-sm">
-              <ToolComponent />
+              <Suspense fallback={<ToolLoading />}>
+                <ToolComponent />
+              </Suspense>
             </div>
           </>
         ) : (

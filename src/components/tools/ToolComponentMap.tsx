@@ -4,29 +4,37 @@ import { Tool } from '@/services/toolsService';
 import * as LucideIcons from 'lucide-react';
 
 // Import tool components
-import ImageToPdfTool from './ImageToPdfTool';
-import TextToSpeechTool from './TextToSpeechTool';
-import PDFToWordTool from './PDFToWordTool';
-import QRCodeTool from './QRCodeTool';
-import WordCounterTool from './WordCounterTool';
-import MetaTagGeneratorTool from './MetaTagGeneratorTool';
-import PlagiarismCheckerTool from './PlagiarismCheckerTool';
-import AIBlogIdeaGeneratorTool from './AIBlogIdeaGeneratorTool';
-import BMICalculatorTool from './BMICalculatorTool';
-import AgeCalculatorTool from './AgeCalculatorTool';
-import KeywordResearchTool from './KeywordResearchTool';
-import ImageCompressorTool from './ImageCompressorTool';
-import ImageResizerTool from './ImageResizerTool';
-import BackgroundRemoverTool from './BackgroundRemoverTool';
-import VideoToGifTool from './VideoToGifTool';
-import JsonFormatterTool from './JsonFormatterTool';
-import AITextGeneratorTool from './AITextGeneratorTool';
-import AIParaphraserTool from './AIParaphraserTool';
-import PasswordGeneratorTool from './PasswordGeneratorTool';
-import CodeMinifierTool from './CodeMinifierTool';
-import LoremIpsumGeneratorTool from './LoremIpsumGeneratorTool';
-import SpeechToTextTool from './SpeechToTextTool';
-import OnlineNotepadTool from './OnlineNotepadTool';
+const ImageToPdfTool = React.lazy(() => import('./ImageToPdfTool'));
+const TextToSpeechTool = React.lazy(() => import('./TextToSpeechTool'));
+const PDFToWordTool = React.lazy(() => import('./PDFToWordTool'));
+const QRCodeTool = React.lazy(() => import('./QRCodeTool'));
+const WordCounterTool = React.lazy(() => import('./WordCounterTool'));
+const MetaTagGeneratorTool = React.lazy(() => import('./MetaTagGeneratorTool'));
+const PlagiarismCheckerTool = React.lazy(() => import('./PlagiarismCheckerTool'));
+const AIBlogIdeaGeneratorTool = React.lazy(() => import('./AIBlogIdeaGeneratorTool'));
+const BMICalculatorTool = React.lazy(() => import('./BMICalculatorTool'));
+const AgeCalculatorTool = React.lazy(() => import('./AgeCalculatorTool'));
+const KeywordResearchTool = React.lazy(() => import('./KeywordResearchTool'));
+const ImageCompressorTool = React.lazy(() => import('./ImageCompressorTool'));
+const ImageResizerTool = React.lazy(() => import('./ImageResizerTool'));
+const BackgroundRemoverTool = React.lazy(() => import('./BackgroundRemoverTool'));
+const VideoToGifTool = React.lazy(() => import('./VideoToGifTool'));
+const JsonFormatterTool = React.lazy(() => import('./JsonFormatterTool'));
+const AITextGeneratorTool = React.lazy(() => import('./AITextGeneratorTool'));
+const AIParaphraserTool = React.lazy(() => import('./AIParaphraserTool'));
+const PasswordGeneratorTool = React.lazy(() => import('./PasswordGeneratorTool'));
+const CodeMinifierTool = React.lazy(() => import('./CodeMinifierTool'));
+const LoremIpsumGeneratorTool = React.lazy(() => import('./LoremIpsumGeneratorTool'));
+const SpeechToTextTool = React.lazy(() => import('./SpeechToTextTool'));
+const OnlineNotepadTool = React.lazy(() => import('./OnlineNotepadTool'));
+
+// Default placeholder for tools that haven't been implemented yet
+const DefaultToolPlaceholder: React.FC = () => (
+  <div className="text-center py-8">
+    <p className="mb-4">This tool interface is under development.</p>
+    <p className="text-gray-600">Please check back later for full functionality.</p>
+  </div>
+);
 
 // Map tool IDs to their component implementations
 const toolComponents: Record<string, React.FC> = {
@@ -70,13 +78,5 @@ export const getIconComponent = (iconName?: string) => {
     ? (LucideIcons as any)[iconName] || LucideIcons.Wrench 
     : LucideIcons.Wrench;
 };
-
-// Default placeholder for tools that haven't been implemented yet
-const DefaultToolPlaceholder: React.FC = () => (
-  <div className="text-center py-8">
-    <p className="mb-4">This tool interface is under development.</p>
-    <p className="text-gray-600">Please check back later for full functionality.</p>
-  </div>
-);
 
 export default toolComponents;

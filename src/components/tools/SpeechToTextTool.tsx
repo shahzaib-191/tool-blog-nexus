@@ -163,7 +163,7 @@ const SpeechToTextTool: React.FC = () => {
                   <label className="block text-sm font-medium">Transcript</label>
                   
                   {transcript && (
-                    <Badge variant="default">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700">
                       {transcript.split(/\s+/).filter(Boolean).length} words
                     </Badge>
                   )}
