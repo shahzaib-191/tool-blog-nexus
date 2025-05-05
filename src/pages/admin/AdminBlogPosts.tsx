@@ -25,6 +25,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SEOMetricsCard from '@/components/admin/SEOMetricsCard';
 import { 
   getAllBlogPosts, 
   createBlogPost, 
@@ -33,7 +35,8 @@ import {
   BlogPost, 
   blogCategories 
 } from '@/services/blogService';
-import { Edit, Plus, Trash2, Image, Upload } from 'lucide-react';
+import { getSEOMetrics } from '@/services/seoService';
+import { Edit, Plus, Trash2, Image, Upload, Gauge, FileText } from 'lucide-react';
 
 const AdminBlogPosts = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -50,11 +53,14 @@ const AdminBlogPosts = () => {
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [seoMetrics, setSeoMetrics] = useState([]);
+  const [activeTab, setActiveTab] = useState('posts');
 
   const { toast } = useToast();
 
   useEffect(() => {
     fetchPosts();
+    fetchSEOMetrics();
   }, []);
 
   const fetchPosts = async () => {
@@ -71,6 +77,20 @@ const AdminBlogPosts = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSEOMetrics = async () => {
+    try {
+      const metrics = await getSEOMetrics();
+      setSeoMetrics(metrics);
+    } catch (error) {
+      console.error('Error fetching SEO metrics:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load SEO metrics.'
+      });
     }
   };
 
@@ -260,91 +280,112 @@ const AdminBlogPosts = () => {
 
   return (
     <AdminLayout title="Blog Posts">
-      <div className="mb-6 flex justify-between items-center">
-        <p className="text-gray-600">
-          Manage your blog posts. Create, edit, and delete posts.
-        </p>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> New Post
-        </Button>
-      </div>
+      <div className="mb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="posts">
+              <FileText className="h-4 w-4 mr-2" />
+              Blog Posts
+            </TabsTrigger>
+            <TabsTrigger value="seo">
+              <Gauge className="h-4 w-4 mr-2" />
+              SEO Analytics
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Blog Posts Table */}
-      <div className="bg-white shadow overflow-hidden rounded-md">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Author
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center">
-                  Loading blog posts...
-                </td>
-              </tr>
-            ) : posts.length > 0 ? (
-              posts.map((post) => (
-                <tr key={post.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {post.imageUrl && (
-                        <div className="flex-shrink-0 h-10 w-10 mr-4">
-                          <img 
-                            src={post.imageUrl} 
-                            alt={post.title} 
-                            className="h-10 w-10 rounded-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="text-sm font-medium text-gray-900">{post.title}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {post.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {post.author}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(post.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(post)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => openDeleteAlert(post)}>
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No blog posts available.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          <TabsContent value="posts" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <p className="text-gray-600">
+                Manage your blog posts. Create, edit, and delete posts.
+              </p>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> New Post
+              </Button>
+            </div>
+
+            {/* Blog Posts Table */}
+            <div className="bg-white shadow overflow-hidden rounded-md">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Author
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center">
+                        Loading blog posts...
+                      </td>
+                    </tr>
+                  ) : posts.length > 0 ? (
+                    posts.map((post) => (
+                      <tr key={post.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {post.imageUrl && (
+                              <div className="flex-shrink-0 h-10 w-10 mr-4">
+                                <img 
+                                  src={post.imageUrl} 
+                                  alt={post.title} 
+                                  className="h-10 w-10 rounded-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="text-sm font-medium text-gray-900">{post.title}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            {post.category}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {post.author}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <Button variant="ghost" size="icon" onClick={() => openEditDialog(post)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => openDeleteAlert(post)}>
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                        No blog posts available.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="seo" className="space-y-4">
+            <SEOMetricsCard metrics={seoMetrics} />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Create Post Dialog */}

@@ -9,6 +9,9 @@ import TextToSpeechTool from './TextToSpeechTool';
 import PDFToWordTool from './PDFToWordTool';
 import QRCodeTool from './QRCodeTool';
 import WordCounterTool from './WordCounterTool';
+import MetaTagGeneratorTool from './MetaTagGeneratorTool';
+import PlagiarismCheckerTool from './PlagiarismCheckerTool';
+import AIBlogIdeaGeneratorTool from './AIBlogIdeaGeneratorTool';
 
 // Map tool IDs to their component implementations
 const toolComponents: Record<string, React.FC> = {
@@ -18,6 +21,9 @@ const toolComponents: Record<string, React.FC> = {
   'qr-generator': QRCodeTool,
   'word-counter': WordCounterTool,
   'text-to-speech': TextToSpeechTool,
+  'meta-tag-generator': MetaTagGeneratorTool,
+  'plagiarism-checker': PlagiarismCheckerTool,
+  'ai-blog-idea': AIBlogIdeaGeneratorTool,
   // Add more tool implementations as needed
 };
 
