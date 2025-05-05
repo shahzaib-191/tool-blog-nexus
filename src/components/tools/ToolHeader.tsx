@@ -6,11 +6,16 @@ import { ArrowLeft } from 'lucide-react';
 import { getIconComponent } from './ToolComponentMap';
 
 interface ToolHeaderProps {
-  tool: Tool;
+  tool?: Tool;
+  title?: string;
+  description?: string;
 }
 
-const ToolHeader: React.FC<ToolHeaderProps> = ({ tool }) => {
-  const IconComponent = getIconComponent(tool.icon);
+const ToolHeader: React.FC<ToolHeaderProps> = ({ tool, title, description }) => {
+  // Use either the tool object or the directly provided title/description
+  const displayTitle = tool?.name || title;
+  const displayDescription = tool?.description || description;
+  const IconComponent = tool ? getIconComponent(tool.icon) : null;
   
   return (
     <>
@@ -21,12 +26,14 @@ const ToolHeader: React.FC<ToolHeaderProps> = ({ tool }) => {
       </div>
       
       <div className="flex items-center gap-4 mb-8">
-        <div className="p-3 bg-blue-50 text-tool-blue rounded-full">
-          <IconComponent size={32} />
-        </div>
+        {IconComponent && (
+          <div className="p-3 bg-blue-50 text-tool-blue rounded-full">
+            <IconComponent size={32} />
+          </div>
+        )}
         <div>
-          <h1 className="text-3xl font-bold">{tool.name}</h1>
-          <p className="text-gray-600">{tool.description}</p>
+          <h1 className="text-3xl font-bold">{displayTitle}</h1>
+          <p className="text-gray-600">{displayDescription}</p>
         </div>
       </div>
     </>

@@ -162,7 +162,7 @@ const JsonFormatterTool: React.FC = () => {
               </div>
               
               {outputJson && !error && (
-                <Badge variant="success" className="mb-2">JSON formatted successfully</Badge>
+                <Badge variant="outline" className="bg-green-50 text-green-700 mb-2">JSON formatted successfully</Badge>
               )}
               
               <p className="text-sm text-gray-500">
@@ -176,7 +176,7 @@ const JsonFormatterTool: React.FC = () => {
               </div>
               
               {inputJson && !error && (
-                <Badge variant="success" className="mb-2">Valid JSON ✓</Badge>
+                <Badge variant="outline" className="bg-green-50 text-green-700 mb-2">Valid JSON ✓</Badge>
               )}
               
               <p className="text-sm text-gray-500">
@@ -190,7 +190,7 @@ const JsonFormatterTool: React.FC = () => {
               </div>
               
               {outputJson && !error && (
-                <Badge variant="success" className="mb-2">JSON minified successfully</Badge>
+                <Badge variant="outline" className="bg-green-50 text-green-700 mb-2">JSON minified successfully</Badge>
               )}
               
               <p className="text-sm text-gray-500">
