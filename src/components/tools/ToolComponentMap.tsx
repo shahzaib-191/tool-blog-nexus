@@ -12,6 +12,13 @@ import WordCounterTool from './WordCounterTool';
 import MetaTagGeneratorTool from './MetaTagGeneratorTool';
 import PlagiarismCheckerTool from './PlagiarismCheckerTool';
 import AIBlogIdeaGeneratorTool from './AIBlogIdeaGeneratorTool';
+import BMICalculatorTool from './BMICalculatorTool';
+import AgeCalculatorTool from './AgeCalculatorTool';
+import KeywordResearchTool from './KeywordResearchTool';
+import ImageCompressorTool from './ImageCompressorTool';
+import ImageResizerTool from './ImageResizerTool';
+import BackgroundRemoverTool from './BackgroundRemoverTool';
+import VideoToGifTool from './VideoToGifTool';
 
 // Map tool IDs to their component implementations
 const toolComponents: Record<string, React.FC> = {
@@ -24,6 +31,13 @@ const toolComponents: Record<string, React.FC> = {
   'meta-tag-generator': MetaTagGeneratorTool,
   'plagiarism-checker': PlagiarismCheckerTool,
   'ai-blog-idea': AIBlogIdeaGeneratorTool,
+  'bmi-calculator': BMICalculatorTool,
+  'age-calculator': AgeCalculatorTool,
+  'keyword-research': KeywordResearchTool,
+  'image-compressor': ImageCompressorTool,
+  'image-resizer': ImageResizerTool,
+  'background-remover': BackgroundRemoverTool,
+  'video-to-gif': VideoToGifTool,
   // Add more tool implementations as needed
 };
 
