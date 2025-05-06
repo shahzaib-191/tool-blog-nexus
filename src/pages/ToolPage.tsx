@@ -32,14 +32,17 @@ const ToolPage = () => {
 
   // Get the component for this tool
   const ToolComponent = getToolComponent(toolId);
+  
+  // Check if this is a network tool (whois or dns lookup) for special styling
+  const isNetworkTool = toolId === 'whois-lookup' || toolId === 'dns-lookup';
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className={`container mx-auto px-4 py-8 ${isNetworkTool ? 'network-tool-container' : ''}`}>
         {loading ? (
           <ToolLoading />
         ) : tool ? (
-          <div className="bg-white p-6 rounded-lg shadow-sm">
+          <div className={`${isNetworkTool ? 'relative z-10' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
             <ToolComponent />
           </div>
         ) : (

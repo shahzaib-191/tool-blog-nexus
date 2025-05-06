@@ -1,6 +1,9 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import './styles/network-tools.css';
 
 @layer base {
   :root {

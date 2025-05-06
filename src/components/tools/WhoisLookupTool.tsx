@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +39,48 @@ const WhoisLookupTool: React.FC = () => {
   const [results, setResults] = useState<WhoisResult | null>(null);
   const [recentDomains, setRecentDomains] = useState<string[]>([]);
   const [showRawData, setShowRawData] = useState(false);
+  
+  useEffect(() => {
+    if (results) {
+      createNetworkConnections();
+    }
+    return () => {
+      removeNetworkConnections();
+    };
+  }, [results]);
+
+  const createNetworkConnections = () => {
+    removeNetworkConnections();
+    
+    const container = document.querySelector('.network-tool-container');
+    if (!container) return;
+    
+    // Create animated connection lines
+    for (let i = 0; i < 8; i++) {
+      const line = document.createElement('div');
+      line.className = 'network-node-connection';
+      
+      const startX = Math.random() * 100;
+      const startY = Math.random() * 100;
+      const endX = Math.random() * 100;
+      const endY = Math.random() * 100;
+      const width = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+      const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
+      
+      line.style.width = `${width}%`;
+      line.style.left = `${startX}%`;
+      line.style.top = `${startY}%`;
+      line.style.transform = `rotate(${angle}deg)`;
+      line.style.animationDelay = `${i * 0.5}s`;
+      
+      container.appendChild(line);
+    }
+  };
+
+  const removeNetworkConnections = () => {
+    const connections = document.querySelectorAll('.network-node-connection');
+    connections.forEach(connection => connection.remove());
+  };
   
   const checkDomain = () => {
     // Validate domain

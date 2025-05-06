@@ -1,0 +1,121 @@
+
+/* Animated background for network tools like WHOIS and DNS Lookup */
+.network-tool-container {
+  position: relative;
+  z-index: 1;
+}
+
+.network-tool-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
+  opacity: 0.97;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Network animation effect */
+.network-tool-container::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200%;
+  background: transparent;
+  opacity: 0.3;
+  z-index: -1;
+  background-image: 
+    radial-gradient(circle at 20% 35%, #64ffda 0%, transparent 0.5%),
+    radial-gradient(circle at 75% 44%, #64ffda 0%, transparent 0.6%),
+    radial-gradient(circle at 46% 56%, #64ffda 0%, transparent 0.7%),
+    radial-gradient(circle at 35% 82%, #64ffda 0%, transparent 0.5%),
+    radial-gradient(circle at 85% 73%, #64ffda 0%, transparent 0.6%),
+    radial-gradient(circle at 28% 15%, #64ffda 0%, transparent 0.7%),
+    radial-gradient(circle at 63% 83%, #64ffda 0%, transparent 0.5%),
+    radial-gradient(circle at 90% 12%, #64ffda 0%, transparent 0.6%);
+  animation: networkAnimation 30s linear infinite;
+  pointer-events: none;
+}
+
+/* Connection lines animation */
+@keyframes networkAnimation {
+  0% {
+    transform: rotate(0deg);
+    background-size: 3%, 4%, 5%, 3%, 4%, 5%, 3%, 4%;
+  }
+  100% {
+    transform: rotate(360deg);
+    background-size: 4%, 5%, 3%, 4%, 5%, 3%, 4%, 5%;
+  }
+}
+
+/* Add custom styling for cards in network tools */
+.network-tool-container .card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.network-tool-container .text-gray-500,
+.network-tool-container .text-gray-700,
+.network-tool-container .text-gray-600 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.network-tool-container h1,
+.network-tool-container h2,
+.network-tool-container h3,
+.network-tool-container h4,
+.network-tool-container h5 {
+  color: #fff;
+}
+
+.network-tool-container label {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.network-tool-container .bg-gray-50,
+.network-tool-container .bg-white {
+  background: rgba(30, 41, 59, 0.5);
+  color: #fff;
+}
+
+.network-tool-container pre {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.network-tool-container .bg-blue-50 {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.network-tool-container .text-blue-700,
+.network-tool-container .text-blue-800 {
+  color: rgba(191, 219, 254, 0.9);
+}
+
+/* Connection lines between nodes - more visible in whois and dns tools */
+.network-node-connection {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.5), transparent);
+  animation: pulse 3s infinite;
+  opacity: 0.4;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.6; }
+}
