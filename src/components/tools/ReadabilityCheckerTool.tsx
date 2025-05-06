@@ -2,12 +2,12 @@
 import React from 'react';
 import ToolHeader from './ToolHeader';
 
-const DNSLookupTool: React.FC = () => {
+const ReadabilityCheckerTool: React.FC = () => {
   return (
     <>
       <ToolHeader
-        title="DNS Lookup"
-        description="Look up DNS records and verify your domain's DNS configuration."
+        title="Readability Checker"
+        description="Analyze and improve your text's readability to ensure it's accessible to your target audience."
       />
       <div className="container mx-auto px-4 py-6">
         <div className="text-center p-8 bg-gray-50 rounded-md">
@@ -21,4 +21,4 @@ const DNSLookupTool: React.FC = () => {
   );
 };
 
-export default DNSLookupTool;
+export default ReadabilityCheckerTool;
