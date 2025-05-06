@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
 import { getToolById, Tool } from '@/services/toolsService';
 import { getToolComponent } from '@/components/tools/ToolComponentMap';
-import ToolHeader from '@/components/tools/ToolHeader';
 import ToolLoading from '@/components/tools/ToolLoading';
 import ToolNotFound from '@/components/tools/ToolNotFound';
 
@@ -40,12 +39,9 @@ const ToolPage = () => {
         {loading ? (
           <ToolLoading />
         ) : tool ? (
-          <>
-            <ToolHeader tool={tool} />
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <ToolComponent />
-            </div>
-          </>
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <ToolComponent />
+          </div>
         ) : (
           <ToolNotFound />
         )}
