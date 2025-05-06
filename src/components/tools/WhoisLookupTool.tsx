@@ -282,246 +282,231 @@ DNSSEC: ${Math.random() > 0.5 ? "signedDelegation" : "unsigned"}
   };
 
   return (
-    <>
-      <ToolHeader
-        title="WHOIS Lookup"
-        description="Look up domain ownership, registration, and contact information in the WHOIS database."
-      />
+    <div className="container mx-auto px-4 py-6">
+      <div className="tool-header">
+        <h1>WHOIS Lookup</h1>
+      </div>
       
-      <div className="container mx-auto px-4 py-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid gap-6">
+      <div className="search-container mb-6">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Enter a domain name or IP address..."
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && checkDomain()}
+        />
+        <button 
+          className="search-button"
+          onClick={checkDomain}
+          disabled={isChecking}
+        >
+          {isChecking ? "Searching..." : "Search"}
+        </button>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid gap-6">
+            {recentDomains.length > 0 && (
               <div>
-                <label className="block text-sm font-medium mb-2">Domain Name</label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <Globe className="h-4 w-4 text-gray-400" />
-                      </div>
-                      <Input
-                        type="text"
-                        placeholder="Enter domain name (e.g., example.com)"
-                        value={domain}
-                        onChange={(e) => setDomain(e.target.value)}
-                        className="pl-10"
-                        onKeyPress={(e) => e.key === 'Enter' && checkDomain()}
-                      />
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={checkDomain}
-                    disabled={isChecking}
-                  >
-                    {isChecking ? "Checking..." : "Lookup WHOIS"}
-                  </Button>
+                <div className="text-sm font-medium mb-2">Recent Lookups</div>
+                <div className="flex flex-wrap gap-2">
+                  {recentDomains.map(recentDomain => (
+                    <Badge 
+                      key={recentDomain} 
+                      variant="outline" 
+                      className="cursor-pointer hover:bg-gray-100"
+                      onClick={() => checkRecentDomain(recentDomain)}
+                    >
+                      {recentDomain}
+                    </Badge>
+                  ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Enter a domain name without http:// or www
-                </p>
               </div>
-              
-              {recentDomains.length > 0 && (
-                <div>
-                  <div className="text-sm font-medium mb-2">Recent Lookups</div>
-                  <div className="flex flex-wrap gap-2">
-                    {recentDomains.map(recentDomain => (
-                      <Badge 
-                        key={recentDomain} 
-                        variant="outline" 
-                        className="cursor-pointer hover:bg-gray-100"
-                        onClick={() => checkRecentDomain(recentDomain)}
-                      >
-                        {recentDomain}
-                      </Badge>
-                    ))}
+            )}
+            
+            {isChecking && (
+              <div className="text-center p-8 rounded-md bg-gray-50 animate-pulse">
+                <Database className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Looking up WHOIS information...</p>
+              </div>
+            )}
+            
+            {results && (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium">WHOIS Results for {results.domain}</h3>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowRawData(!showRawData)}
+                    >
+                      {showRawData ? "Show Summary" : "Show Raw Data"}
+                    </Button>
                   </div>
                 </div>
-              )}
-              
-              {isChecking && (
-                <div className="text-center p-8 rounded-md bg-gray-50 animate-pulse">
-                  <Database className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">Looking up WHOIS information...</p>
-                </div>
-              )}
-              
-              {results && (
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium">WHOIS Results for {results.domain}</h3>
-                    <div className="flex gap-2">
+                
+                {showRawData ? (
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-medium">Raw WHOIS Data</span>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        onClick={() => setShowRawData(!showRawData)}
+                        onClick={() => copyToClipboard(results.rawData)}
                       >
-                        {showRawData ? "Show Summary" : "Show Raw Data"}
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy
                       </Button>
                     </div>
+                    <pre className="bg-black text-green-400 font-mono text-xs p-4 rounded-md overflow-auto max-h-[400px]">
+                      {results.rawData}
+                    </pre>
                   </div>
-                  
-                  {showRawData ? (
-                    <div className="bg-gray-50 p-4 rounded-md">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium">Raw WHOIS Data</span>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => copyToClipboard(results.rawData)}
-                        >
-                          <Copy className="h-4 w-4 mr-1" />
-                          Copy
-                        </Button>
-                      </div>
-                      <pre className="bg-black text-green-400 font-mono text-xs p-4 rounded-md overflow-auto max-h-[400px]">
-                        {results.rawData}
-                      </pre>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Calendar className="h-5 w-5 text-blue-500" />
-                            <h3 className="font-medium">Domain Dates</h3>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">Created Date:</span>
-                              <span className="text-sm font-medium">{results.dates.createdDate}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Updated Date:</span>
-                              <span className="text-sm font-medium">{results.dates.updatedDate}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Expires Date:</span>
-                              <span className="text-sm font-medium">{results.dates.expiryDate}</span>
-                            </div>
-                          </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calendar className="h-5 w-5 text-blue-500" />
+                          <h3 className="font-medium">Domain Dates</h3>
                         </div>
-                        
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Building className="h-5 w-5 text-purple-500" />
-                            <h3 className="font-medium">Registrar Information</h3>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Created Date:</span>
+                            <span className="text-sm font-medium">{results.dates.createdDate}</span>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">Registrar:</span>
-                              <span className="text-sm font-medium">{results.registrar.name}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Registrar URL:</span>
-                              <a 
-                                href={results.registrar.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:underline"
-                              >
-                                {results.registrar.url.replace(/https?:\/\//i, '')}
-                              </a>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Abuse Contact:</span>
-                              <span className="text-sm font-medium">{results.registrar.abuseContactEmail}</span>
-                            </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Updated Date:</span>
+                            <span className="text-sm font-medium">{results.dates.updatedDate}</span>
                           </div>
-                        </div>
-                        
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Database className="h-5 w-5 text-green-500" />
-                            <h3 className="font-medium">Domain Status</h3>
-                          </div>
-                          <div className="space-y-2">
-                            {results.domainStatus.map((status, index) => (
-                              <Badge 
-                                key={index}
-                                variant="outline" 
-                                className="mr-2 mb-2"
-                              >
-                                {status}
-                              </Badge>
-                            ))}
-                          </div>
-                          <div className="mt-3">
-                            <div className="flex justify-between">
-                              <span className="text-sm">DNSSEC:</span>
-                              <span className="text-sm font-medium">{results.dnssec}</span>
-                            </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Expires Date:</span>
+                            <span className="text-sm font-medium">{results.dates.expiryDate}</span>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="space-y-4">
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <div className="flex items-center gap-2 mb-3">
-                            <User className="h-5 w-5 text-yellow-500" />
-                            <h3 className="font-medium">Registrant Information</h3>
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Building className="h-5 w-5 text-purple-500" />
+                          <h3 className="font-medium">Registrar Information</h3>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Registrar:</span>
+                            <span className="text-sm font-medium">{results.registrar.name}</span>
                           </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">Organization:</span>
-                              <span className="text-sm font-medium">{results.registrant.organization}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">Country:</span>
-                              <span className="text-sm font-medium">{results.registrant.country}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">State/Province:</span>
-                              <span className="text-sm font-medium">{results.registrant.state}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">City:</span>
-                              <span className="text-sm font-medium">{results.registrant.city}</span>
-                            </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Registrar URL:</span>
+                            <a 
+                              href={results.registrar.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:underline"
+                            >
+                              {results.registrar.url.replace(/https?:\/\//i, '')}
+                            </a>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Abuse Contact:</span>
+                            <span className="text-sm font-medium">{results.registrar.abuseContactEmail}</span>
                           </div>
                         </div>
-                        
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <div className="flex items-center gap-2 mb-3">
-                            <Globe className="h-5 w-5 text-red-500" />
-                            <h3 className="font-medium">Name Servers</h3>
-                          </div>
-                          <div className="space-y-1 font-mono text-xs">
-                            {results.nameServers.map((ns, index) => (
-                              <div key={index} className="bg-white p-2 rounded border">{ns}</div>
-                            ))}
-                          </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Database className="h-5 w-5 text-green-500" />
+                          <h3 className="font-medium">Domain Status</h3>
                         </div>
-                        
-                        <div className="bg-blue-50 p-4 rounded-md">
-                          <h3 className="text-sm font-medium text-blue-800 mb-2">What is WHOIS?</h3>
-                          <p className="text-xs text-blue-700">
-                            WHOIS (pronounced as "who is") is a query and response protocol that provides information about registered domain names. 
-                            This information includes domain registration date, expiration date, registrant contact details, and technical details like name servers.
-                            Due to privacy regulations like GDPR, some registrant information may be redacted.
-                          </p>
+                        <div className="space-y-2">
+                          {results.domainStatus.map((status, index) => (
+                            <Badge 
+                              key={index}
+                              variant="outline" 
+                              className="mr-2 mb-2"
+                            >
+                              {status}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between">
+                            <span className="text-sm">DNSSEC:</span>
+                            <span className="text-sm font-medium">{results.dnssec}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-              
-              {!isChecking && !results && (
-                <div className="text-center p-8 bg-gray-50 rounded-md">
-                  <Database className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-medium text-gray-700">WHOIS Domain Lookup</h3>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Enter a domain name above to check its registration information
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+                    
+                    <div className="space-y-4">
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <div className="flex items-center gap-2 mb-3">
+                          <User className="h-5 w-5 text-yellow-500" />
+                          <h3 className="font-medium">Registrant Information</h3>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Organization:</span>
+                            <span className="text-sm font-medium">{results.registrant.organization}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Country:</span>
+                            <span className="text-sm font-medium">{results.registrant.country}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">State/Province:</span>
+                            <span className="text-sm font-medium">{results.registrant.state}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">City:</span>
+                            <span className="text-sm font-medium">{results.registrant.city}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 p-4 rounded-md">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Globe className="h-5 w-5 text-red-500" />
+                          <h3 className="font-medium">Name Servers</h3>
+                        </div>
+                        <div className="space-y-1 font-mono text-xs">
+                          {results.nameServers.map((ns, index) => (
+                            <div key={index} className="bg-white p-2 rounded border">{ns}</div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="bg-blue-50 p-4 rounded-md">
+                        <h3 className="text-sm font-medium text-blue-800 mb-2">What is WHOIS?</h3>
+                        <p className="text-xs text-blue-700">
+                          WHOIS (pronounced as "who is") is a query and response protocol that provides information about registered domain names. 
+                          This information includes domain registration date, expiration date, registrant contact details, and technical details like name servers.
+                          Due to privacy regulations like GDPR, some registrant information may be redacted.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!isChecking && !results && (
+              <div className="text-center p-8 bg-gray-50 rounded-md">
+                <Database className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-gray-700">WHOIS Domain Lookup</h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  Enter a domain name above to check its registration information
+                </p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

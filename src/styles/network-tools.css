@@ -3,6 +3,9 @@
 .network-tool-container {
   position: relative;
   z-index: 1;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #2d1b3a 0%, #1a0f24 100%);
+  overflow: hidden;
 }
 
 .network-tool-container::before {
@@ -13,56 +16,119 @@
   right: 0;
   bottom: 0;
   z-index: -1;
-  background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
-  opacity: 0.97;
-  border-radius: 1rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-/* Network animation effect */
-.network-tool-container::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  right: -50%;
-  bottom: -50%;
-  width: 200%;
-  height: 200%;
-  background: transparent;
-  opacity: 0.3;
-  z-index: -1;
-  background-image: 
-    radial-gradient(circle at 20% 35%, #64ffda 0%, transparent 0.5%),
-    radial-gradient(circle at 75% 44%, #64ffda 0%, transparent 0.6%),
-    radial-gradient(circle at 46% 56%, #64ffda 0%, transparent 0.7%),
-    radial-gradient(circle at 35% 82%, #64ffda 0%, transparent 0.5%),
-    radial-gradient(circle at 85% 73%, #64ffda 0%, transparent 0.6%),
-    radial-gradient(circle at 28% 15%, #64ffda 0%, transparent 0.7%),
-    radial-gradient(circle at 63% 83%, #64ffda 0%, transparent 0.5%),
-    radial-gradient(circle at 90% 12%, #64ffda 0%, transparent 0.6%);
-  animation: networkAnimation 30s linear infinite;
+  background-image: url("/lovable-uploads/0864700b-32bd-483d-805c-99f771b25fd2.png");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.4;
   pointer-events: none;
 }
 
-/* Connection lines animation */
-@keyframes networkAnimation {
-  0% {
-    transform: rotate(0deg);
-    background-size: 3%, 4%, 5%, 3%, 4%, 5%, 3%, 4%;
-  }
-  100% {
-    transform: rotate(360deg);
-    background-size: 4%, 5%, 3%, 4%, 5%, 3%, 4%, 5%;
-  }
+/* Network nodes for spider web animation */
+.node {
+  position: absolute;
+  height: 2px;
+  width: 2px;
+  background: rgba(100, 255, 218, 0.8);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
-/* Add custom styling for cards in network tools */
+/* Network lines between nodes - more visible in whois and dns tools */
+.network-node-connection {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.5), transparent);
+  animation: pulse 3s infinite;
+  opacity: 0.6;
+  border-radius: 10px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Spider animated cursor */
+.spider-cursor {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(100, 255, 218, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+}
+
+.spider-cursor::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: rgba(100, 255, 218, 0.8);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.spider-cursor::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 15px;
+  height: 15px;
+  border: 1px solid rgba(100, 255, 218, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s infinite;
+}
+
+/* Spider legs */
+.spider-leg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 1px;
+  background: rgba(100, 255, 218, 0.5);
+  transform-origin: left center;
+}
+
+.leg-1 { transform: rotate(0deg); }
+.leg-2 { transform: rotate(45deg); }
+.leg-3 { transform: rotate(90deg); }
+.leg-4 { transform: rotate(135deg); }
+.leg-5 { transform: rotate(180deg); }
+.leg-6 { transform: rotate(225deg); }
+.leg-7 { transform: rotate(270deg); }
+.leg-8 { transform: rotate(315deg); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* Animation for the spider to move legs */
+@keyframes spiderLegMove {
+  0%, 100% { width: 18px; }
+  50% { width: 22px; }
+}
+
+/* Apply to all spider legs with different delays */
+.spider-leg {
+  animation: spiderLegMove 1s infinite;
+}
+
+.leg-1, .leg-5 { animation-delay: 0s; }
+.leg-2, .leg-6 { animation-delay: 0.1s; }
+.leg-3, .leg-7 { animation-delay: 0.2s; }
+.leg-4, .leg-8 { animation-delay: 0.3s; }
+
+/* Style customizations for network tool containers */
 .network-tool-container .card {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(30, 41, 59, 0.8);
   backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(100, 255, 218, 0.1);
   color: #fff;
 }
 
@@ -103,19 +169,51 @@
   color: rgba(191, 219, 254, 0.9);
 }
 
-/* Connection lines between nodes - more visible in whois and dns tools */
-.network-node-connection {
-  position: absolute;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(100, 255, 218, 0.5), transparent);
-  animation: pulse 3s infinite;
-  opacity: 0.4;
-  border-radius: 10px;
-  pointer-events: none;
-  z-index: -1;
+/* Update for heading styles to match the example */
+.network-tool-container .tool-header {
+  text-align: center;
+  padding: 2rem 0;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.6; }
+.network-tool-container .tool-header h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.network-tool-container .search-container {
+  max-width: 700px;
+  margin: 0 auto;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.network-tool-container .search-input {
+  flex-grow: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+.network-tool-container .search-button {
+  background: #0891b2;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.network-tool-container .search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.network-tool-container .search-input:focus {
+  outline: none;
 }

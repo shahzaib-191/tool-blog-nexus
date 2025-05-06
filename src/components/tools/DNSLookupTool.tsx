@@ -281,225 +281,211 @@ const DNSLookupTool: React.FC = () => {
   };
 
   return (
-    <>
-      <ToolHeader
-        title="DNS Lookup"
-        description="Look up DNS records and verify your domain's DNS configuration."
-      />
+    <div className="container mx-auto px-4 py-6">
+      <div className="tool-header">
+        <h1>DNS Lookup</h1>
+      </div>
+
+      <div className="search-container mb-6">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="Enter a domain name..."
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && checkDNS()}
+        />
+        <button 
+          className="search-button"
+          onClick={checkDNS}
+          disabled={isChecking}
+        >
+          {isChecking ? "Searching..." : "Search"}
+        </button>
+      </div>
       
-      <div className="container mx-auto px-4 py-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid gap-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Domain</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <Globe className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="Enter domain name (e.g., example.com)"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      className="pl-10"
-                      onKeyPress={(e) => e.key === 'Enter' && checkDNS()}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-2">Record Type</label>
-                  <Select value={recordType} onValueChange={setRecordType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select record type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {recordTypes.map(type => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row justify-between gap-3">
-                <Button 
-                  onClick={checkDNS}
-                  disabled={isChecking}
-                >
-                  {isChecking ? (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                      Checking DNS...
-                    </>
-                  ) : (
-                    <>
-                      <Server className="mr-2 h-4 w-4" />
-                      Lookup DNS
-                    </>
-                  )}
-                </Button>
-                
-                {recentLookups.length > 0 && (
-                  <div className="flex items-center gap-2 overflow-x-auto">
-                    <span className="text-xs text-gray-500 whitespace-nowrap">Recent:</span>
-                    {recentLookups.map((lookup, index) => (
-                      <Badge 
-                        key={index}
-                        variant="outline"
-                        className="cursor-pointer whitespace-nowrap"
-                        onClick={() => {
-                          setDomain(lookup.domain);
-                          setRecordType(lookup.type);
-                          setTimeout(checkDNS, 100);
-                        }}
-                      >
-                        {lookup.domain} ({lookup.type})
-                      </Badge>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid gap-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Record Type</label>
+                <Select value={recordType} onValueChange={setRecordType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select record type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recordTypes.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
                     ))}
-                  </div>
-                )}
+                  </SelectContent>
+                </Select>
               </div>
-              
-              {results && (
-                <div>
-                  <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="formatted">Formatted</TabsTrigger>
-                      <TabsTrigger value="dig">Dig Format</TabsTrigger>
-                    </TabsList>
+            </div>
+            
+            {recentLookups.length > 0 && (
+              <div className="flex items-center gap-2 overflow-x-auto">
+                <span className="text-xs text-gray-500 whitespace-nowrap">Recent:</span>
+                {recentLookups.map((lookup, index) => (
+                  <Badge 
+                    key={index}
+                    variant="outline"
+                    className="cursor-pointer whitespace-nowrap"
+                    onClick={() => {
+                      setDomain(lookup.domain);
+                      setRecordType(lookup.type);
+                      setTimeout(checkDNS, 100);
+                    }}
+                  >
+                    {lookup.domain} ({lookup.type})
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {isChecking && (
+              <div className="text-center p-8 bg-gray-50 rounded-md animate-pulse">
+                <Server className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500">Looking up DNS records...</p>
+              </div>
+            )}
+            
+            {results && (
+              <div>
+                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="formatted">Formatted</TabsTrigger>
+                    <TabsTrigger value="dig">Dig Format</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="formatted" className="pt-4">
+                    <div className="mb-4 flex justify-between items-center">
+                      <h3 className="font-medium">
+                        {recordType} Records for {results.domain}
+                      </h3>
+                    </div>
                     
-                    <TabsContent value="formatted" className="pt-4">
-                      <div className="mb-4 flex justify-between items-center">
-                        <h3 className="font-medium">
-                          {recordType} Records for {results.domain}
-                        </h3>
-                      </div>
-                      
-                      {getDNSRecordsForType(recordType).length > 0 ? (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                              <tr>
-                                <th className="px-4 py-3 text-left">Name</th>
-                                <th className="px-4 py-3 text-left">Type</th>
-                                <th className="px-4 py-3 text-left">Value</th>
+                    {getDNSRecordsForType(recordType).length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-3 text-left">Name</th>
+                              <th className="px-4 py-3 text-left">Type</th>
+                              <th className="px-4 py-3 text-left">Value</th>
+                              {recordType === 'MX' && (
+                                <th className="px-4 py-3 text-left">Priority</th>
+                              )}
+                              <th className="px-4 py-3 text-left">TTL</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y">
+                            {getDNSRecordsForType(recordType).map((record, index) => (
+                              <tr key={index} className="bg-white hover:bg-gray-50">
+                                <td className="px-4 py-3">{record.name}</td>
+                                <td className="px-4 py-3">
+                                  <Badge variant="outline">{record.type}</Badge>
+                                </td>
+                                <td className="px-4 py-3 font-mono text-xs">
+                                  {record.value}
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => copyToClipboard(record.value)}
+                                    className="ml-2 h-6 w-6 p-0"
+                                  >
+                                    <Copy className="h-3 w-3" />
+                                  </Button>
+                                </td>
                                 {recordType === 'MX' && (
-                                  <th className="px-4 py-3 text-left">Priority</th>
+                                  <td className="px-4 py-3">{record.priority}</td>
                                 )}
-                                <th className="px-4 py-3 text-left">TTL</th>
+                                <td className="px-4 py-3">{record.ttl}s</td>
                               </tr>
-                            </thead>
-                            <tbody className="divide-y">
-                              {getDNSRecordsForType(recordType).map((record, index) => (
-                                <tr key={index} className="bg-white hover:bg-gray-50">
-                                  <td className="px-4 py-3">{record.name}</td>
-                                  <td className="px-4 py-3">
-                                    <Badge variant="outline">{record.type}</Badge>
-                                  </td>
-                                  <td className="px-4 py-3 font-mono text-xs">
-                                    {record.value}
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm" 
-                                      onClick={() => copyToClipboard(record.value)}
-                                      className="ml-2 h-6 w-6 p-0"
-                                    >
-                                      <Copy className="h-3 w-3" />
-                                    </Button>
-                                  </td>
-                                  {recordType === 'MX' && (
-                                    <td className="px-4 py-3">{record.priority}</td>
-                                  )}
-                                  <td className="px-4 py-3">{record.ttl}s</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="text-center p-8 bg-gray-50 rounded-md">
-                          <p className="text-gray-500">No {recordType} records found for {results.domain}.</p>
-                        </div>
-                      )}
-                    </TabsContent>
-                    
-                    <TabsContent value="dig" className="pt-4">
-                      <div className="mb-4 flex justify-between items-center">
-                        <h3 className="font-medium">Dig Format Output</h3>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => copyToClipboard(getDigFormattedOutput())}
-                        >
-                          <Copy className="mr-1 h-4 w-4" />
-                          Copy
-                        </Button>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                      
-                      <div className="bg-black text-green-400 font-mono text-xs p-4 rounded-md overflow-auto">
-                        <pre>
-                          {`; <<>> DiG 9.10.6 <<>> ${recordType} ${results.domain}
+                    ) : (
+                      <div className="text-center p-8 bg-gray-50 rounded-md">
+                        <p className="text-gray-500">No {recordType} records found for {results.domain}.</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="dig" className="pt-4">
+                    <div className="mb-4 flex justify-between items-center">
+                      <h3 className="font-medium">Dig Format Output</h3>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => copyToClipboard(getDigFormattedOutput())}
+                      >
+                        <Copy className="mr-1 h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
+                    
+                    <div className="bg-black text-green-400 font-mono text-xs p-4 rounded-md overflow-auto">
+                      <pre>
+                        {`; <<>> DiG 9.10.6 <<>> ${recordType} ${results.domain}
 ;; QUESTION SECTION:
 ;${results.domain}.			IN	${recordType}
 
 ${getDigFormattedOutput()}
 `}
-                        </pre>
-                      </div>
-                    </TabsContent>
-                  </Tabs>
+                      </pre>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+            
+            {!isChecking && !results && (
+              <div className="text-center p-8 bg-gray-50 rounded-md">
+                <Server className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <h3 className="text-lg font-medium text-gray-700">DNS Lookup Tool</h3>
+                <p className="text-sm text-gray-500 mt-2">
+                  Enter a domain name above to query its DNS records
+                </p>
+              </div>
+            )}
+            
+            <div className="bg-blue-50 p-4 rounded-md">
+              <h3 className="text-sm font-medium text-blue-800 mb-2">DNS Record Types Explained</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-blue-700">
+                <div>
+                  <Badge variant="outline" className="mb-1 bg-blue-100">A</Badge>
+                  <p>Maps a domain to an IPv4 address</p>
                 </div>
-              )}
-              
-              {!isChecking && !results && (
-                <div className="text-center p-8 bg-gray-50 rounded-md">
-                  <Server className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-medium text-gray-700">DNS Lookup Tool</h3>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Enter a domain name above to query its DNS records
-                  </p>
+                <div>
+                  <Badge variant="outline" className="mb-1 bg-blue-100">AAAA</Badge>
+                  <p>Maps a domain to an IPv6 address</p>
                 </div>
-              )}
-              
-              <div className="bg-blue-50 p-4 rounded-md">
-                <h3 className="text-sm font-medium text-blue-800 mb-2">DNS Record Types Explained</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-blue-700">
-                  <div>
-                    <Badge variant="outline" className="mb-1 bg-blue-100">A</Badge>
-                    <p>Maps a domain to an IPv4 address</p>
-                  </div>
-                  <div>
-                    <Badge variant="outline" className="mb-1 bg-blue-100">AAAA</Badge>
-                    <p>Maps a domain to an IPv6 address</p>
-                  </div>
-                  <div>
-                    <Badge variant="outline" className="mb-1 bg-blue-100">MX</Badge>
-                    <p>Specifies mail servers responsible for receiving email</p>
-                  </div>
-                  <div>
-                    <Badge variant="outline" className="mb-1 bg-blue-100">CNAME</Badge>
-                    <p>Creates an alias pointing to another domain name</p>
-                  </div>
-                  <div>
-                    <Badge variant="outline" className="mb-1 bg-blue-100">TXT</Badge>
-                    <p>Stores text information (often used for verification)</p>
-                  </div>
-                  <div>
-                    <Badge variant="outline" className="mb-1 bg-blue-100">NS</Badge>
-                    <p>Specifies authoritative name servers for the domain</p>
-                  </div>
+                <div>
+                  <Badge variant="outline" className="mb-1 bg-blue-100">MX</Badge>
+                  <p>Specifies mail servers responsible for receiving email</p>
+                </div>
+                <div>
+                  <Badge variant="outline" className="mb-1 bg-blue-100">CNAME</Badge>
+                  <p>Creates an alias pointing to another domain name</p>
+                </div>
+                <div>
+                  <Badge variant="outline" className="mb-1 bg-blue-100">TXT</Badge>
+                  <p>Stores text information (often used for verification)</p>
+                </div>
+                <div>
+                  <Badge variant="outline" className="mb-1 bg-blue-100">NS</Badge>
+                  <p>Specifies authoritative name servers for the domain</p>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
