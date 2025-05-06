@@ -1,4 +1,3 @@
-
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
 
@@ -61,19 +60,20 @@ const toolComponents: Record<string, React.FC> = {
   'password-generator': PasswordGeneratorTool,
   'css-minifier': CodeMinifierTool,
   'lorem-ipsum': LoremIpsumGeneratorTool,
-  'unit-converter': DefaultToolPlaceholder,
-  'currency-converter': DefaultToolPlaceholder,
-  'pomodoro-timer': DefaultToolPlaceholder,
-  'world-clock': DefaultToolPlaceholder,
-  'audio-to-text': DefaultToolPlaceholder,
-  'backlink-checker': DefaultToolPlaceholder,
-  'website-speed-test': DefaultToolPlaceholder,
-  'utm-link-builder': DefaultToolPlaceholder,
-  'readability-checker': DefaultToolPlaceholder,
-  'domain-age-checker': DefaultToolPlaceholder,
-  'ssl-checker': DefaultToolPlaceholder,
-  'whois-lookup': DefaultToolPlaceholder,
-  'dns-lookup': DefaultToolPlaceholder
+  'unit-converter': UnitConverterTool,
+  'currency-converter': CurrencyConverterTool,
+  'pomodoro-timer': PomodoroTimerTool,
+  'world-clock': WorldClockTool,
+  'audio-to-text': AudioToTextTool,
+  'backlink-checker': BacklinkCheckerTool,
+  'website-speed-test': WebsiteSpeedTestTool,
+  'utm-link-builder': UTMLinkBuilderTool,
+  'readability-checker': ReadabilityCheckerTool,
+  'domain-age-checker': DomainAgeCheckerTool,
+  'ssl-checker': SSLCheckerTool,
+  'whois-lookup': WhoisLookupTool,
+  'dns-lookup': DNSLookupTool,
+  'port-scanner': PortScannerTool
 };
 
 export const getToolComponent = (toolId: string | undefined): React.FC => {
