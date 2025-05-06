@@ -1,3 +1,4 @@
+
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
 
@@ -25,6 +26,10 @@ const CodeMinifierTool = React.lazy(() => import('./CodeMinifierTool'));
 const LoremIpsumGeneratorTool = React.lazy(() => import('./LoremIpsumGeneratorTool'));
 const SpeechToTextTool = React.lazy(() => import('./SpeechToTextTool'));
 const OnlineNotepadTool = React.lazy(() => import('./OnlineNotepadTool'));
+const DNSLookupTool = React.lazy(() => import('./DNSLookupTool'));
+const PortScannerTool = React.lazy(() => import('./PortScannerTool'));
+const SSLCheckerTool = React.lazy(() => import('./SSLCheckerTool'));
+const WhoisLookupTool = React.lazy(() => import('./WhoisLookupTool'));
 
 // Default placeholder for tools that haven't been implemented yet
 const DefaultToolPlaceholder: React.FC = () => (
@@ -60,20 +65,20 @@ const toolComponents: Record<string, React.FC> = {
   'password-generator': PasswordGeneratorTool,
   'css-minifier': CodeMinifierTool,
   'lorem-ipsum': LoremIpsumGeneratorTool,
-  'unit-converter': UnitConverterTool,
-  'currency-converter': CurrencyConverterTool,
-  'pomodoro-timer': PomodoroTimerTool,
-  'world-clock': WorldClockTool,
-  'audio-to-text': AudioToTextTool,
-  'backlink-checker': BacklinkCheckerTool,
-  'website-speed-test': WebsiteSpeedTestTool,
-  'utm-link-builder': UTMLinkBuilderTool,
-  'readability-checker': ReadabilityCheckerTool,
-  'domain-age-checker': DomainAgeCheckerTool,
+  'unit-converter': DefaultToolPlaceholder,
+  'currency-converter': DefaultToolPlaceholder,
+  'pomodoro-timer': DefaultToolPlaceholder,
+  'world-clock': DefaultToolPlaceholder,
+  'audio-to-text': DefaultToolPlaceholder,
+  'backlink-checker': DefaultToolPlaceholder,
+  'website-speed-test': DefaultToolPlaceholder,
+  'utm-link-builder': DefaultToolPlaceholder,
+  'readability-checker': DefaultToolPlaceholder,
+  'domain-age-checker': DefaultToolPlaceholder,
   'ssl-checker': SSLCheckerTool,
   'whois-lookup': WhoisLookupTool,
   'dns-lookup': DNSLookupTool,
-  'port-scanner': PortScannerTool
+  'port-scanner': PortScannerTool,
 };
 
 export const getToolComponent = (toolId: string | undefined): React.FC => {
