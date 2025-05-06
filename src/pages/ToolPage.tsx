@@ -1,5 +1,5 @@
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
 import { getToolById, Tool } from '@/services/toolsService';
@@ -20,9 +20,7 @@ const ToolPage = () => {
       try {
         setLoading(true);
         const toolData = await getToolById(toolId);
-        if (toolData) {
-          setTool(toolData);
-        }
+        setTool(toolData || null);
       } catch (error) {
         console.error('Error fetching tool:', error);
       } finally {
@@ -43,11 +41,9 @@ const ToolPage = () => {
           <ToolLoading />
         ) : tool ? (
           <>
-            {tool && <ToolHeader tool={tool} />}
+            <ToolHeader tool={tool} />
             <div className="bg-white p-6 rounded-lg shadow-sm">
-              <Suspense fallback={<ToolLoading />}>
-                <ToolComponent />
-              </Suspense>
+              <ToolComponent />
             </div>
           </>
         ) : (

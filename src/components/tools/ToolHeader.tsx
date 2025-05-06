@@ -27,7 +27,7 @@ const ToolHeader: React.FC<ToolHeaderProps> = ({ tool, title, description }) => 
       
       <div className="flex items-center gap-4 mb-8">
         {IconComponent && (
-          <div className="p-3 bg-blue-50 text-tool-blue rounded-full">
+          <div className="p-3 bg-blue-50 text-blue-600 rounded-full">
             <IconComponent size={32} />
           </div>
         )}

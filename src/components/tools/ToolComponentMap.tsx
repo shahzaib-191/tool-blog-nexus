@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tool } from '@/services/toolsService';
 import * as LucideIcons from 'lucide-react';
 
 // Import tool components
@@ -27,6 +26,19 @@ const CodeMinifierTool = React.lazy(() => import('./CodeMinifierTool'));
 const LoremIpsumGeneratorTool = React.lazy(() => import('./LoremIpsumGeneratorTool'));
 const SpeechToTextTool = React.lazy(() => import('./SpeechToTextTool'));
 const OnlineNotepadTool = React.lazy(() => import('./OnlineNotepadTool'));
+const UnitConverterTool = React.lazy(() => import('./UnitConverterTool'));
+const CurrencyConverterTool = React.lazy(() => import('./CurrencyConverterTool'));
+const PomodoroTimerTool = React.lazy(() => import('./PomodoroTimerTool'));
+const WorldClockTool = React.lazy(() => import('./WorldClockTool'));
+const AudioToTextTool = React.lazy(() => import('./AudioToTextTool'));
+const BacklinkCheckerTool = React.lazy(() => import('./BacklinkCheckerTool'));
+const WebsiteSpeedTestTool = React.lazy(() => import('./WebsiteSpeedTestTool'));
+const UTMLinkBuilderTool = React.lazy(() => import('./UTMLinkBuilderTool'));
+const ReadabilityCheckerTool = React.lazy(() => import('./ReadabilityCheckerTool'));
+const DomainAgeCheckerTool = React.lazy(() => import('./DomainAgeCheckerTool'));
+const SSLCheckerTool = React.lazy(() => import('./SSLCheckerTool'));
+const WhoisLookupTool = React.lazy(() => import('./WhoisLookupTool'));
+const DNSLookupTool = React.lazy(() => import('./DNSLookupTool'));
 
 // Default placeholder for tools that haven't been implemented yet
 const DefaultToolPlaceholder: React.FC = () => (
@@ -62,7 +74,19 @@ const toolComponents: Record<string, React.FC> = {
   'password-generator': PasswordGeneratorTool,
   'css-minifier': CodeMinifierTool,
   'lorem-ipsum': LoremIpsumGeneratorTool,
-  // Add more tool implementations as needed
+  'unit-converter': UnitConverterTool,
+  'currency-converter': CurrencyConverterTool,
+  'pomodoro-timer': PomodoroTimerTool,
+  'world-clock': WorldClockTool,
+  'audio-to-text': AudioToTextTool,
+  'backlink-checker': BacklinkCheckerTool,
+  'website-speed-test': WebsiteSpeedTestTool,
+  'utm-link-builder': UTMLinkBuilderTool,
+  'readability-checker': ReadabilityCheckerTool,
+  'domain-age-checker': DomainAgeCheckerTool,
+  'ssl-checker': SSLCheckerTool,
+  'whois-lookup': WhoisLookupTool,
+  'dns-lookup': DNSLookupTool
 };
 
 export const getToolComponent = (toolId: string | undefined): React.FC => {
