@@ -57,6 +57,14 @@ const ToolPage = () => {
   // Create spider cursor
   useEffect(() => {
     if (!isNetworkTool) return;
+    
+    // Remove any existing spider cursors first
+    const existingCursors = document.querySelectorAll('.spider-cursor');
+    existingCursors.forEach(cursor => {
+      if (cursor.parentNode) {
+        document.body.removeChild(cursor);
+      }
+    });
 
     const spiderCursor = document.createElement('div');
     spiderCursor.className = 'spider-cursor';
@@ -95,7 +103,7 @@ const ToolPage = () => {
     if (!container) return;
     
     // Create animated spider web nodes
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       const node = document.createElement('div');
       node.className = 'node';
       
@@ -115,7 +123,7 @@ const ToolPage = () => {
       const currentNode = nodes[i];
       
       // Connect this node to 2-3 other random nodes
-      const connections = Math.floor(Math.random() * 2) + 1;
+      const connections = Math.floor(Math.random() * 2) + 2;
       
       for (let c = 0; c < connections; c++) {
         // Get random target node
