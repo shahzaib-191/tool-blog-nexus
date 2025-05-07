@@ -30,6 +30,12 @@ const DNSLookupTool = React.lazy(() => import('./DNSLookupTool'));
 const PortScannerTool = React.lazy(() => import('./PortScannerTool'));
 const SSLCheckerTool = React.lazy(() => import('./SSLCheckerTool'));
 const WhoisLookupTool = React.lazy(() => import('./WhoisLookupTool'));
+const AudioToTextTool = React.lazy(() => import('./AudioToTextTool'));
+const CurrencyConverterTool = React.lazy(() => import('./CurrencyConverterTool'));
+const UnitConverterTool = React.lazy(() => import('./UnitConverterTool'));
+const PomodoroTimerTool = React.lazy(() => import('./PomodoroTimerTool'));
+const DomainAgeCheckerTool = React.lazy(() => import('./DomainAgeCheckerTool'));
+const BacklinkCheckerTool = React.lazy(() => import('./BacklinkCheckerTool'));
 
 // Default placeholder for tools that haven't been implemented yet
 const DefaultToolPlaceholder: React.FC = () => (
@@ -65,16 +71,16 @@ const toolComponents: Record<string, React.FC> = {
   'password-generator': PasswordGeneratorTool,
   'css-minifier': CodeMinifierTool,
   'lorem-ipsum': LoremIpsumGeneratorTool,
-  'unit-converter': DefaultToolPlaceholder,
-  'currency-converter': DefaultToolPlaceholder,
-  'pomodoro-timer': DefaultToolPlaceholder,
+  'audio-to-text': AudioToTextTool, // Updated to use actual component
+  'currency-converter': CurrencyConverterTool, // Updated to use actual component
+  'unit-converter': UnitConverterTool, // Updated to use actual component
+  'pomodoro-timer': PomodoroTimerTool, // Updated to use actual component
   'world-clock': DefaultToolPlaceholder,
-  'audio-to-text': DefaultToolPlaceholder,
-  'backlink-checker': DefaultToolPlaceholder,
+  'backlink-checker': BacklinkCheckerTool,
   'website-speed-test': DefaultToolPlaceholder,
   'utm-link-builder': DefaultToolPlaceholder,
   'readability-checker': DefaultToolPlaceholder,
-  'domain-age-checker': DefaultToolPlaceholder,
+  'domain-age-checker': DomainAgeCheckerTool,
   'ssl-checker': SSLCheckerTool,
   'whois-lookup': WhoisLookupTool,
   'dns-lookup': DNSLookupTool,
