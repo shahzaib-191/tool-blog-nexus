@@ -71,10 +71,10 @@ const toolComponents: Record<string, React.FC> = {
   'password-generator': PasswordGeneratorTool,
   'css-minifier': CodeMinifierTool,
   'lorem-ipsum': LoremIpsumGeneratorTool,
-  'audio-to-text': AudioToTextTool, // Updated to use actual component
-  'currency-converter': CurrencyConverterTool, // Updated to use actual component
-  'unit-converter': UnitConverterTool, // Updated to use actual component
-  'pomodoro-timer': PomodoroTimerTool, // Updated to use actual component
+  'audio-to-text': AudioToTextTool,
+  'currency-converter': CurrencyConverterTool,
+  'unit-converter': UnitConverterTool,
+  'pomodoro-timer': PomodoroTimerTool,
   'world-clock': DefaultToolPlaceholder,
   'backlink-checker': BacklinkCheckerTool,
   'website-speed-test': DefaultToolPlaceholder,
