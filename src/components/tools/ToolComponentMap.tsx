@@ -36,6 +36,9 @@ const UnitConverterTool = React.lazy(() => import('./UnitConverterTool'));
 const PomodoroTimerTool = React.lazy(() => import('./PomodoroTimerTool'));
 const DomainAgeCheckerTool = React.lazy(() => import('./DomainAgeCheckerTool'));
 const BacklinkCheckerTool = React.lazy(() => import('./BacklinkCheckerTool'));
+const WebsiteSpeedTestTool = React.lazy(() => import('./WebsiteSpeedTestTool'));
+const UTMLinkBuilderTool = React.lazy(() => import('./UTMLinkBuilderTool'));
+const ReadabilityCheckerTool = React.lazy(() => import('./ReadabilityCheckerTool'));
 
 // Default placeholder for tools that haven't been implemented yet
 const DefaultToolPlaceholder: React.FC = () => (
@@ -77,9 +80,9 @@ const toolComponents: Record<string, React.FC> = {
   'pomodoro-timer': PomodoroTimerTool,
   'world-clock': DefaultToolPlaceholder,
   'backlink-checker': BacklinkCheckerTool,
-  'website-speed-test': DefaultToolPlaceholder,
-  'utm-link-builder': DefaultToolPlaceholder,
-  'readability-checker': DefaultToolPlaceholder,
+  'website-speed-test': WebsiteSpeedTestTool,
+  'utm-link-builder': UTMLinkBuilderTool,
+  'readability-checker': ReadabilityCheckerTool,
   'domain-age-checker': DomainAgeCheckerTool,
   'ssl-checker': SSLCheckerTool,
   'whois-lookup': WhoisLookupTool,
