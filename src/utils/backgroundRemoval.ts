@@ -1,3 +1,4 @@
+
 import { pipeline, env } from '@huggingface/transformers';
 
 // Configure transformers.js to allow downloading models
@@ -31,12 +32,26 @@ function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingCont
   return false;
 }
 
-export const removeBackground = async (imageElement: HTMLImageElement): Promise<Blob> => {
+export const removeBackground = async (
+  imageElement: HTMLImageElement, 
+  progressCallback?: (progress: number) => void
+): Promise<Blob> => {
   try {
     console.log('Starting background removal process...');
+    progressCallback?.(15);
+    
     const segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
       device: 'webgpu',
+      progress_callback: (progress: any) => {
+        // Model loading progress
+        if (progress.status === 'progress' && progress.progress) {
+          const modelProgress = progress.progress * 35; // Scale to 35%
+          progressCallback?.(30 + modelProgress);
+        }
+      }
     });
+    
+    progressCallback?.(65);
     
     // Convert HTMLImageElement to canvas
     const canvas = document.createElement('canvas');
@@ -48,15 +63,20 @@ export const removeBackground = async (imageElement: HTMLImageElement): Promise<
     const wasResized = resizeImageIfNeeded(canvas, ctx, imageElement);
     console.log(`Image ${wasResized ? 'was' : 'was not'} resized. Final dimensions: ${canvas.width}x${canvas.height}`);
     
+    progressCallback?.(70);
+    
     // Get image data as base64
     const imageData = canvas.toDataURL('image/jpeg', 0.8);
     console.log('Image converted to base64');
+    
+    progressCallback?.(75);
     
     // Process the image with the segmentation model
     console.log('Processing with segmentation model...');
     const result = await segmenter(imageData);
     
     console.log('Segmentation result:', result);
+    progressCallback?.(85);
     
     if (!result || !Array.isArray(result) || result.length === 0 || !result[0].mask) {
       throw new Error('Invalid segmentation result');
@@ -90,6 +110,7 @@ export const removeBackground = async (imageElement: HTMLImageElement): Promise<
     
     outputCtx.putImageData(outputImageData, 0, 0);
     console.log('Mask applied successfully');
+    progressCallback?.(90);
     
     // Convert canvas to blob
     return new Promise((resolve, reject) => {
@@ -97,6 +118,7 @@ export const removeBackground = async (imageElement: HTMLImageElement): Promise<
         (blob) => {
           if (blob) {
             console.log('Successfully created final blob');
+            progressCallback?.(100);
             resolve(blob);
           } else {
             reject(new Error('Failed to create blob'));

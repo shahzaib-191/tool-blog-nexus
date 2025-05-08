@@ -48,6 +48,7 @@ const BackgroundRemoverTool: React.FC = () => {
       if (event.target?.result) {
         setOriginalImage(event.target.result as string);
         setProcessedImage(null);
+        setProgress(0);
       }
     };
     reader.readAsDataURL(file);
@@ -71,8 +72,14 @@ const BackgroundRemoverTool: React.FC = () => {
         variant: "default",
       });
       
-      // Start processing
-      const processedBlob = await removeBackground(img);
+      // Add progress update callback
+      const processedBlob = await removeBackground(img, (progressValue) => {
+        // Make sure progress doesn't go backward
+        if (progressValue > progress) {
+          setProgress(Math.min(progressValue, 90));
+        }
+      });
+      
       setProgress(90);
       
       // Convert blob to data URL
@@ -94,6 +101,7 @@ const BackgroundRemoverTool: React.FC = () => {
     } catch (error) {
       console.error('Error processing image:', error);
       setIsProcessing(false);
+      setProgress(0);
       
       toast({
         title: "Error",
