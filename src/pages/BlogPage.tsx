@@ -11,6 +11,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Calendar, User } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const BlogPage = () => {
   const [searchParams] = useSearchParams();
@@ -18,6 +19,7 @@ const BlogPage = () => {
   
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -31,16 +33,22 @@ const BlogPage = () => {
           fetchedPosts = await getAllBlogPosts();
         }
         
+        console.log("Blog posts fetched:", fetchedPosts); // Log for debugging
         setPosts(fetchedPosts);
       } catch (error) {
         console.error('Error fetching blog posts:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load blog posts. Please try again.",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchPosts();
-  }, [category]);
+  }, [category, toast]);
 
   return (
     <MainLayout>

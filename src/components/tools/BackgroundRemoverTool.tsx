@@ -59,35 +59,28 @@ const BackgroundRemoverTool: React.FC = () => {
     
     try {
       setIsProcessing(true);
-      setProgress(10);
+      setProgress(0);
       
       // Load the image
       const img = await loadImage(originalFile);
-      setProgress(30);
       
-      // Process the image with our background removal function
       toast({
         title: "Processing",
         description: "Removing background with AI...",
         variant: "default",
       });
       
-      // Add progress update callback
+      // Use the progressCallback to update the progress state
       const processedBlob = await removeBackground(img, (progressValue) => {
-        // Make sure progress doesn't go backward
-        if (progressValue > progress) {
-          setProgress(Math.min(progressValue, 90));
-        }
+        console.log(`Progress update: ${progressValue}%`);
+        setProgress(progressValue);
       });
-      
-      setProgress(90);
       
       // Convert blob to data URL
       const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
           setProcessedImage(e.target.result as string);
-          setProgress(100);
           setIsProcessing(false);
           
           toast({
@@ -98,6 +91,7 @@ const BackgroundRemoverTool: React.FC = () => {
         }
       };
       reader.readAsDataURL(processedBlob);
+      
     } catch (error) {
       console.error('Error processing image:', error);
       setIsProcessing(false);

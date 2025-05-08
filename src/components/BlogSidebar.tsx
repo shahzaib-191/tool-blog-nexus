@@ -12,7 +12,9 @@ const BlogSidebar = () => {
   useEffect(() => {
     const fetchRecentPosts = async () => {
       try {
+        setLoading(true);
         const posts = await getRecentBlogPosts(5);
+        console.log("Recent posts fetched:", posts); // Log for debugging
         setRecentPosts(posts);
       } catch (error) {
         console.error('Error fetching recent posts:', error);
@@ -46,28 +48,32 @@ const BlogSidebar = () => {
             </div>
           ) : (
             <ul className="space-y-3">
-              {recentPosts.map((post) => (
-                <li key={post.id}>
-                  <Link 
-                    to={`/blog/${post.id}`}
-                    className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-md transition-colors"
-                  >
-                    {post.imageUrl && (
-                      <img 
-                        src={post.imageUrl} 
-                        alt={post.title} 
-                        className="w-10 h-10 object-cover rounded" 
-                      />
-                    )}
-                    <div>
-                      <p className="font-medium line-clamp-2 text-sm">{post.title}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(post.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </Link>
-                </li>
-              ))}
+              {recentPosts.length > 0 ? (
+                recentPosts.map((post) => (
+                  <li key={post.id}>
+                    <Link 
+                      to={`/blog/${post.id}`}
+                      className="flex items-start space-x-3 hover:bg-gray-50 p-2 rounded-md transition-colors"
+                    >
+                      {post.imageUrl && (
+                        <img 
+                          src={post.imageUrl} 
+                          alt={post.title} 
+                          className="w-10 h-10 object-cover rounded" 
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium line-clamp-2 text-sm">{post.title}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                <li className="text-sm text-gray-500">No recent posts available</li>
+              )}
             </ul>
           )}
         </CardContent>
