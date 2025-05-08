@@ -20,8 +20,8 @@ export const blogCategories = [
   "Image Processing"
 ];
 
-// Mock data
-let blogPosts: BlogPost[] = [
+// Initial mock data
+const initialBlogPosts: BlogPost[] = [
   {
     id: "1",
     title: "Top 10 Productivity Tools You Should Use in 2025",
@@ -50,6 +50,23 @@ let blogPosts: BlogPost[] = [
     imageUrl: "https://images.unsplash.com/photo-1677442135066-8cedf832644d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8QUklMjB0b29sc3xlbnwwfHwwfHx8MA%3D%3D"
   },
 ];
+
+// Load blog posts from localStorage or use initial data if none exists
+const loadBlogPosts = (): BlogPost[] => {
+  const savedPosts = localStorage.getItem('blogPosts');
+  if (savedPosts) {
+    return JSON.parse(savedPosts);
+  }
+  return initialBlogPosts;
+};
+
+// Save blog posts to localStorage
+const saveBlogPosts = (posts: BlogPost[]): void => {
+  localStorage.setItem('blogPosts', JSON.stringify(posts));
+};
+
+// Initialize blog posts
+let blogPosts = loadBlogPosts();
 
 // Get all blog posts
 export const getAllBlogPosts = (): Promise<BlogPost[]> => {
@@ -97,7 +114,10 @@ export const createBlogPost = (post: Omit<BlogPost, 'id' | 'createdAt'>): Promis
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
       };
-      blogPosts.push(newPost);
+      blogPosts = [newPost, ...blogPosts];
+      saveBlogPosts(blogPosts); // Save to localStorage
+      console.log("Blog post created:", newPost);
+      console.log("Current blog posts:", blogPosts);
       resolve(newPost);
     }, 500);
   });
@@ -110,6 +130,7 @@ export const updateBlogPost = (id: string, updates: Partial<BlogPost>): Promise<
       const postIndex = blogPosts.findIndex(post => post.id === id);
       if (postIndex !== -1) {
         blogPosts[postIndex] = { ...blogPosts[postIndex], ...updates };
+        saveBlogPosts(blogPosts); // Save to localStorage
         resolve(blogPosts[postIndex]);
       } else {
         resolve(undefined);
@@ -124,6 +145,7 @@ export const deleteBlogPost = (id: string): Promise<boolean> => {
     setTimeout(() => {
       const initialLength = blogPosts.length;
       blogPosts = blogPosts.filter(post => post.id !== id);
+      saveBlogPosts(blogPosts); // Save to localStorage
       resolve(blogPosts.length < initialLength);
     }, 500);
   });

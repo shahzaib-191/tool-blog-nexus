@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import MainLayout from '@/components/Layout/MainLayout';
 import BlogSidebar from '@/components/BlogSidebar';
@@ -21,34 +21,35 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        let fetchedPosts;
-        
-        if (category) {
-          fetchedPosts = await getBlogPostsByCategory(category);
-        } else {
-          fetchedPosts = await getAllBlogPosts();
-        }
-        
-        console.log("Blog posts fetched:", fetchedPosts); // Log for debugging
-        setPosts(fetchedPosts);
-      } catch (error) {
-        console.error('Error fetching blog posts:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load blog posts. Please try again.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      let fetchedPosts;
+      
+      if (category) {
+        fetchedPosts = await getBlogPostsByCategory(category);
+        console.log(`Blog posts fetched by category (${category}):`, fetchedPosts);
+      } else {
+        fetchedPosts = await getAllBlogPosts();
+        console.log("All blog posts fetched:", fetchedPosts);
       }
-    };
-
-    fetchPosts();
+      
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load blog posts. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [category, toast]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   return (
     <MainLayout>

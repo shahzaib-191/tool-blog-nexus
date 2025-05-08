@@ -4,27 +4,34 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getRecentBlogPosts, blogCategories, BlogPost } from '@/services/blogService';
+import { useToast } from '@/components/ui/use-toast';
 
 const BlogSidebar = () => {
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchRecentPosts = async () => {
       try {
         setLoading(true);
         const posts = await getRecentBlogPosts(5);
-        console.log("Recent posts fetched:", posts); // Log for debugging
+        console.log("Recent posts fetched in BlogSidebar:", posts);
         setRecentPosts(posts);
       } catch (error) {
         console.error('Error fetching recent posts:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load recent blog posts.'
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchRecentPosts();
-  }, []);
+  }, [toast]);
 
   return (
     <div className="space-y-6">
