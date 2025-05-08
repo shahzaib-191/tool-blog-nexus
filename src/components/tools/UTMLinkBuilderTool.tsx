@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import ToolHeader from './ToolHeader';
 import { Button } from '@/components/ui/button';
@@ -286,17 +285,11 @@ const UTMLinkBuilderTool = () => {
                             Copy to Clipboard
                           </Button>
                           
-                          <Button
-                            as="a"
-                            href={generatedUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Test Link
-                          </Button>
+                          <a href={generatedUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+                            <Button variant="outline" className="text-xs">
+                              Open Link
+                            </Button>
+                          </a>
                         </div>
                       </div>
                     ) : (

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import ToolHeader from './ToolHeader';
 import { Button } from '@/components/ui/button';
@@ -460,7 +459,12 @@ const WebsiteSpeedTestTool = () => {
                                   </div>
                                   <span className="text-sm font-medium">{formatBytes(resources.htmlSize)}</span>
                                 </div>
-                                <Progress value={(resources.htmlSize / resources.totalSize) * 100} className="h-2 bg-gray-100" indicatorClassName="bg-blue-500" />
+                                <div className="bg-gray-200 rounded-full h-2 w-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-blue-500 transition-all duration-500" 
+                                    style={{ width: `${(resources.htmlSize / resources.totalSize) * 100}%` }}
+                                  ></div>
+                                </div>
                               </div>
                               
                               <div className="space-y-2">
@@ -471,7 +475,12 @@ const WebsiteSpeedTestTool = () => {
                                   </div>
                                   <span className="text-sm font-medium">{formatBytes(resources.cssSize)}</span>
                                 </div>
-                                <Progress value={(resources.cssSize / resources.totalSize) * 100} className="h-2 bg-gray-100" indicatorClassName="bg-purple-500" />
+                                <div className="bg-gray-200 rounded-full h-2 w-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-purple-500 transition-all duration-500" 
+                                    style={{ width: `${(resources.cssSize / resources.totalSize) * 100}%` }}
+                                  ></div>
+                                </div>
                               </div>
                               
                               <div className="space-y-2">
@@ -482,7 +491,12 @@ const WebsiteSpeedTestTool = () => {
                                   </div>
                                   <span className="text-sm font-medium">{formatBytes(resources.jsSize)}</span>
                                 </div>
-                                <Progress value={(resources.jsSize / resources.totalSize) * 100} className="h-2 bg-gray-100" indicatorClassName="bg-yellow-500" />
+                                <div className="bg-gray-200 rounded-full h-2 w-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-yellow-500 transition-all duration-500" 
+                                    style={{ width: `${(resources.jsSize / resources.totalSize) * 100}%` }}
+                                  ></div>
+                                </div>
                               </div>
                               
                               <div className="space-y-2">
@@ -493,7 +507,12 @@ const WebsiteSpeedTestTool = () => {
                                   </div>
                                   <span className="text-sm font-medium">{formatBytes(resources.imageSize)}</span>
                                 </div>
-                                <Progress value={(resources.imageSize / resources.totalSize) * 100} className="h-2 bg-gray-100" indicatorClassName="bg-green-500" />
+                                <div className="bg-gray-200 rounded-full h-2 w-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-green-500 transition-all duration-500" 
+                                    style={{ width: `${(resources.imageSize / resources.totalSize) * 100}%` }}
+                                  ></div>
+                                </div>
                               </div>
                               
                               <div className="space-y-2">
@@ -504,7 +523,12 @@ const WebsiteSpeedTestTool = () => {
                                   </div>
                                   <span className="text-sm font-medium">{formatBytes(resources.fontSize)}</span>
                                 </div>
-                                <Progress value={(resources.fontSize / resources.totalSize) * 100} className="h-2 bg-gray-100" indicatorClassName="bg-red-500" />
+                                <div className="bg-gray-200 rounded-full h-2 w-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-red-500 transition-all duration-500" 
+                                    style={{ width: `${(resources.fontSize / resources.totalSize) * 100}%` }}
+                                  ></div>
+                                </div>
                               </div>
                             </div>
                           </div>

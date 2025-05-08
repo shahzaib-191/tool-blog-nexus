@@ -1,11 +1,13 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/use-toast';
-import { Download, Upload, Image as ImageIcon } from 'lucide-react';
-import ToolHeader from './ToolHeader';
+import { Download, Upload, Image as ImageIcon, Eraser } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import ToolHeader from './ToolHeader';
+import { loadImage, removeBackground } from '@/utils/backgroundRemoval';
 
 const BackgroundRemoverTool: React.FC = () => {
   const { toast } = useToast();
@@ -13,6 +15,7 @@ const BackgroundRemoverTool: React.FC = () => {
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +42,7 @@ const BackgroundRemoverTool: React.FC = () => {
       return;
     }
 
+    setOriginalFile(file);
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -49,63 +53,54 @@ const BackgroundRemoverTool: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const processImage = () => {
-    if (!originalImage) return;
+  const processImage = async () => {
+    if (!originalImage || !originalFile) return;
     
-    setIsProcessing(true);
-    setProgress(0);
-    
-    // Simulate processing with progress updates
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 5;
+    try {
+      setIsProcessing(true);
+      setProgress(10);
+      
+      // Load the image
+      const img = await loadImage(originalFile);
+      setProgress(30);
+      
+      // Process the image with our background removal function
+      toast({
+        title: "Processing",
+        description: "Removing background with AI...",
+        variant: "default",
       });
-    }, 100);
-    
-    // Simulate background removal (in a real app, you'd use an API or library)
-    setTimeout(() => {
-      clearInterval(interval);
-      setProgress(100);
       
-      // Create a canvas to process the image (this is just for simulation)
-      const img = document.createElement('img');
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-        
-        canvas.width = img.width;
-        canvas.height = img.height;
-        
-        // Draw the original image
-        ctx.drawImage(img, 0, 0);
-        
-        // For simulation purposes, we'll just draw a checkerboard pattern as background
-        // and keep the center part of the image
-        // In a real app, you would use an actual background removal algorithm or API
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        // Simulated processing would happen here
-        
-        ctx.putImageData(imageData, 0, 0);
-        
-        // Convert canvas to data URL and set as processed image
-        const processedDataUrl = canvas.toDataURL('image/png');
-        setProcessedImage(processedDataUrl);
-        setIsProcessing(false);
-        
-        toast({
-          title: "Success",
-          description: "Background removed successfully!",
-          variant: "default",
-        });
+      // Start processing
+      const processedBlob = await removeBackground(img);
+      setProgress(90);
+      
+      // Convert blob to data URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setProcessedImage(e.target.result as string);
+          setProgress(100);
+          setIsProcessing(false);
+          
+          toast({
+            title: "Success",
+            description: "Background removed successfully!",
+            variant: "default",
+          });
+        }
       };
+      reader.readAsDataURL(processedBlob);
+    } catch (error) {
+      console.error('Error processing image:', error);
+      setIsProcessing(false);
       
-      img.src = originalImage;
-    }, 3000);
+      toast({
+        title: "Error",
+        description: "Failed to remove background. Please try again with a different image.",
+        variant: "destructive",
+      });
+    }
   };
 
   const downloadImage = () => {
@@ -127,7 +122,7 @@ const BackgroundRemoverTool: React.FC = () => {
     <>
       <ToolHeader 
         title="Background Remover" 
-        description="Remove backgrounds from images quickly and easily."
+        description="Remove backgrounds from images quickly and easily with AI."
       />
 
       <div className="container mx-auto px-4 py-6">
@@ -202,7 +197,7 @@ const BackgroundRemoverTool: React.FC = () => {
                           />
                         ) : (
                           <div className="text-center text-gray-400">
-                            <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                            <Eraser className="h-12 w-12 mx-auto mb-2" />
                             <p>Click "Remove Background" to process</p>
                           </div>
                         )}
