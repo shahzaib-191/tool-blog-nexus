@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,27 +11,55 @@ const BlogSidebar = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  const fetchRecentPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const posts = await getRecentBlogPosts(5);
+      console.log("Recent posts fetched in BlogSidebar:", posts);
+      setRecentPosts(posts);
+    } catch (error) {
+      console.error('Error fetching recent posts:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load recent blog posts.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
-    const fetchRecentPosts = async () => {
-      try {
-        setLoading(true);
-        const posts = await getRecentBlogPosts(5);
-        console.log("Recent posts fetched in BlogSidebar:", posts);
-        setRecentPosts(posts);
-      } catch (error) {
-        console.error('Error fetching recent posts:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load recent blog posts.'
-        });
-      } finally {
-        setLoading(false);
-      }
+    // Initial fetch
+    fetchRecentPosts();
+
+    // Set up a custom event to listen for blog post changes
+    const handleBlogPostsChange = () => {
+      console.log("Blog posts changed event detected, refreshing...");
+      fetchRecentPosts();
     };
 
-    fetchRecentPosts();
-  }, [toast]);
+    window.addEventListener('blogPostsChanged', handleBlogPostsChange);
+
+    // Also refresh on storage changes (for multi-tab support)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'blogPosts') {
+        console.log("Local storage change detected for blogPosts");
+        fetchRecentPosts();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+
+    // Poll for changes every minute as a fallback
+    const intervalId = setInterval(fetchRecentPosts, 60000);
+
+    return () => {
+      window.removeEventListener('blogPostsChanged', handleBlogPostsChange);
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(intervalId);
+    };
+  }, [fetchRecentPosts]);
 
   return (
     <div className="space-y-6">

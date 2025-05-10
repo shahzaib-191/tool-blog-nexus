@@ -51,18 +51,33 @@ const initialBlogPosts: BlogPost[] = [
   },
 ];
 
+// Custom event for blog post changes
+const notifyBlogPostsChanged = () => {
+  window.dispatchEvent(new Event('blogPostsChanged'));
+};
+
 // Load blog posts from localStorage or use initial data if none exists
 const loadBlogPosts = (): BlogPost[] => {
   const savedPosts = localStorage.getItem('blogPosts');
   if (savedPosts) {
-    return JSON.parse(savedPosts);
+    try {
+      return JSON.parse(savedPosts);
+    } catch (error) {
+      console.error('Error parsing saved blog posts:', error);
+      return initialBlogPosts;
+    }
   }
   return initialBlogPosts;
 };
 
 // Save blog posts to localStorage
 const saveBlogPosts = (posts: BlogPost[]): void => {
-  localStorage.setItem('blogPosts', JSON.stringify(posts));
+  try {
+    localStorage.setItem('blogPosts', JSON.stringify(posts));
+    notifyBlogPostsChanged();
+  } catch (error) {
+    console.error('Error saving blog posts to localStorage:', error);
+  }
 };
 
 // Initialize blog posts
@@ -71,7 +86,11 @@ let blogPosts = loadBlogPosts();
 // Get all blog posts
 export const getAllBlogPosts = (): Promise<BlogPost[]> => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve([...blogPosts]), 500);
+    setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
+      resolve([...blogPosts]);
+    }, 300);
   });
 };
 
@@ -79,8 +98,10 @@ export const getAllBlogPosts = (): Promise<BlogPost[]> => {
 export const getBlogPostById = (id: string): Promise<BlogPost | undefined> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
       resolve(blogPosts.find(post => post.id === id));
-    }, 500);
+    }, 300);
   });
 };
 
@@ -88,11 +109,13 @@ export const getBlogPostById = (id: string): Promise<BlogPost | undefined> => {
 export const getRecentBlogPosts = (limit: number = 5): Promise<BlogPost[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
       const sorted = [...blogPosts].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       resolve(sorted.slice(0, limit));
-    }, 500);
+    }, 300);
   });
 };
 
@@ -100,8 +123,10 @@ export const getRecentBlogPosts = (limit: number = 5): Promise<BlogPost[]> => {
 export const getBlogPostsByCategory = (category: string): Promise<BlogPost[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
       resolve(blogPosts.filter(post => post.category === category));
-    }, 500);
+    }, 300);
   });
 };
 
@@ -109,17 +134,22 @@ export const getBlogPostsByCategory = (category: string): Promise<BlogPost[]> =>
 export const createBlogPost = (post: Omit<BlogPost, 'id' | 'createdAt'>): Promise<BlogPost> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
+      
       const newPost: BlogPost = {
         ...post,
         id: Date.now().toString(),
         createdAt: new Date().toISOString(),
       };
+      
       blogPosts = [newPost, ...blogPosts];
-      saveBlogPosts(blogPosts); // Save to localStorage
+      saveBlogPosts(blogPosts); // Save to localStorage and trigger event
+      
       console.log("Blog post created:", newPost);
       console.log("Current blog posts:", blogPosts);
       resolve(newPost);
-    }, 500);
+    }, 300);
   });
 };
 
@@ -127,15 +157,18 @@ export const createBlogPost = (post: Omit<BlogPost, 'id' | 'createdAt'>): Promis
 export const updateBlogPost = (id: string, updates: Partial<BlogPost>): Promise<BlogPost | undefined> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
+      
       const postIndex = blogPosts.findIndex(post => post.id === id);
       if (postIndex !== -1) {
         blogPosts[postIndex] = { ...blogPosts[postIndex], ...updates };
-        saveBlogPosts(blogPosts); // Save to localStorage
+        saveBlogPosts(blogPosts); // Save to localStorage and trigger event
         resolve(blogPosts[postIndex]);
       } else {
         resolve(undefined);
       }
-    }, 500);
+    }, 300);
   });
 };
 
@@ -143,10 +176,13 @@ export const updateBlogPost = (id: string, updates: Partial<BlogPost>): Promise<
 export const deleteBlogPost = (id: string): Promise<boolean> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // Ensure we're using the latest data from localStorage
+      blogPosts = loadBlogPosts();
+      
       const initialLength = blogPosts.length;
       blogPosts = blogPosts.filter(post => post.id !== id);
-      saveBlogPosts(blogPosts); // Save to localStorage
+      saveBlogPosts(blogPosts); // Save to localStorage and trigger event
       resolve(blogPosts.length < initialLength);
-    }, 500);
+    }, 300);
   });
 };

@@ -48,7 +48,31 @@ const BlogPage = () => {
   }, [category, toast]);
 
   useEffect(() => {
+    // Initial fetch
     fetchPosts();
+    
+    // Listen for blog post changes
+    const handleBlogPostsChange = () => {
+      console.log("Blog posts changed event detected in BlogPage, refreshing...");
+      fetchPosts();
+    };
+    
+    window.addEventListener('blogPostsChanged', handleBlogPostsChange);
+    
+    // Also refresh on storage changes (for multi-tab support)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'blogPosts') {
+        console.log("Local storage change detected for blogPosts in BlogPage");
+        fetchPosts();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('blogPostsChanged', handleBlogPostsChange);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [fetchPosts]);
 
   return (
